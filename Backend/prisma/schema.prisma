@@ -12,9 +12,22 @@ datasource db {
   provider = "postgresql"
 }
 
-model TestData {
+model Project {
+  id Int @id
+  name String
+  data HSE_Report[]
+}
+
+model HSE_Report {
   id Int @id @default(autoincrement())
-  projectid Int
-  projectname String
-  data Json
+  projectId Int
+  projectName String
+  HSEAudits Int
+  safetyWalks Int
+  toolboxTalks Int
+  workingHours Int
+  trainingHours Int
+  jobSafetyAnalysis Int
+
+  project Project @relation(fields: [projectId], references: [id])
 }
