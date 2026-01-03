@@ -19,42 +19,51 @@ app.use(cors())
 const PORT = 3000
 
 app.get('/', async (req, res) => {
-  const projectSummary = await prisma.project.findMany({
-    include: {
-      data: {
-        select: {
-          HSEAudits: true,
-          safetyWalks: true,
-          toolboxTalks: true,
-          workingHours: true,
-          trainingHours: true,
-          jobSafetyAnalysis: true
+  try {
+    const allReports = await prisma.project.findMany({
+      include: {
+        data: {
+          select: {
+            HSEAudits: true,
+            safetyWalks: true,
+            toolboxTalks: true,
+            workingHours: true,
+            trainingHours: true,
+            jobSafetyAnalysis: true
+          }
         }
       }
-    }
-  })
-  res.json(projectSummary)
+    })
+    res.json(allReports)
+
+  } catch (error) {
+    console.log('Error:', error)
+  }
 })
 
 app.get('/summary', async (req, res) => {
-  const projectSummary = await prisma.HSE_Report.groupBy({
-    by: ['projectId', 'projectName'],
-    _sum: {
-      HSEAudits: true,
-      safetyWalks: true,
-      toolboxTalks: true,
-      workingHours: true,
-      trainingHours: true,
-      jobSafetyAnalysis: true
-    }
-  })
-  res.json(projectSummary)
+  try {
+    const projectSummary = await prisma.HSE_Report.groupBy({
+      by: ['projectId', 'projectName'],
+      _sum: {
+        HSEAudits: true,
+        safetyWalks: true,
+        toolboxTalks: true,
+        workingHours: true,
+        trainingHours: true,
+        jobSafetyAnalysis: true
+      }
+    })
+    res.json(projectSummary)
+
+  } catch (error) {
+    console.log('Error:', error)
+  }
 })
 
 app.post('/test', async (req, res) => {
   const {ProjectID, ProjectName, ...data} = req.body
   const {HSEAudits, safetyWalks, toolboxTalks, workingHours, trainingHours, jobSafetyAnalysis} = data
-
   try {
     const savedData = await prisma.HSE_Report.create({
       data: {
@@ -68,7 +77,6 @@ app.post('/test', async (req, res) => {
         jobSafetyAnalysis: Number(jobSafetyAnalysis)
       }
     })
-
     console.log('Data send to database:', savedData)
 
   } catch (error) {
