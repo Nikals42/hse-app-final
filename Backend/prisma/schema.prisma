@@ -28,6 +28,7 @@ model HSE_Report {
   workingHours Int
   trainingHours Int
   jobSafetyAnalysis Int
-
+  
+  timeStamp DateTime @default(now())
   project Project @relation(fields: [projectId], references: [id])
 }
