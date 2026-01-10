@@ -16,12 +16,12 @@ export default function ProjectMetrics() {
   const handleSubmit = async (data) => {
   setSubmitted(data);
 
-    const request = await fetch('http://localhost:3000/test', {
+    const request = await fetch('http://localhost:3000/report', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ProjectID: id, ProjectName: project?.name, ...data})
+      body: JSON.stringify({ProjectID: id, ...data})
     });
 };
 

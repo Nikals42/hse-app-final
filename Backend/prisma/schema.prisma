@@ -13,15 +13,16 @@ datasource db {
 }
 
 model Project {
-  id Int @id
-  name String
-  data HSE_Report[]
+  id Int @id @default(autoincrement())
+  name String @unique
+  leadingIndicators HSE_Report[]
+  laggingIndicators Lagging_Indicators[]
 }
 
 model HSE_Report {
   id Int @id @default(autoincrement())
   projectId Int
-  projectName String
+  timeStamp DateTime @default(now())
   HSEAudits Int
   safetyWalks Int
   toolboxTalks Int
@@ -29,6 +30,19 @@ model HSE_Report {
   trainingHours Int
   jobSafetyAnalysis Int
   
-  timeStamp DateTime @default(now())
+  project Project @relation(fields: [projectId], references: [id])
+}
+
+model Lagging_Indicators {
+  id Int @id @default(autoincrement())
+  projectId Int
+  LTI Int
+  FA Int
+  MTI Int
+  RTW Int
+  Fatality Int
+  PPD Int
+  PTD Int
+
   project Project @relation(fields: [projectId], references: [id])
 }
