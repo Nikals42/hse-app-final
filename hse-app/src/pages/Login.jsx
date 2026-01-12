@@ -5,12 +5,24 @@ export default function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (username.trim() !== "") {
       // Save username to localStorage
       localStorage.setItem("username", username);
-      navigate("/projects");
+      const request = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({username: username})
+      })
+      console.log(request)
+      if (request.ok) {
+        navigate("/projects");
+      } else {
+        alert('Wrong username')
+      }
     }
   };
 

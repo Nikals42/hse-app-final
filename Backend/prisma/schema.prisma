@@ -46,3 +46,8 @@ model Lagging_Indicators {
 
   project Project @relation(fields: [projectId], references: [id])
 }
+
+model Accounts {
+  id Int @id @default(autoincrement())
+  username String @unique
+}
