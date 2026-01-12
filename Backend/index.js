@@ -37,7 +37,7 @@ async function apiProjects() {
     const json = await response.json()
     for (const project of json.data) {
       const name = project.projectCode
-      await prisma.project.upsert({
+      await prisma.Project.upsert({
         where: {
           name: name
         },
@@ -60,7 +60,7 @@ async function apiLaggingIndicators() {
     const json = await response.json()
     for (const project of json.data) {
       const name = project.projectCode
-      const findId = await prisma.project.findUnique({
+      const findId = await prisma.Project.findUnique({
         where: {
           name: name
         }, select: {
@@ -126,13 +126,38 @@ async function callAPI() {
 // for Frontend to retrieve Project names and id
 app.get('/projects', async (req, res) => {
   try {
-    const projects = await prisma.project.findMany({
+    const projects = await prisma.Project.findMany({
       select: {
         id: true,
         name: true
       }
     })
     res.json(projects)
+
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+// for Frontend to retrieve Project names, id and lagging indicators
+app.get('/projects/data', async (req, res) => {
+  try {
+    const projectData = await prisma.Project.findMany({
+      include: {
+        laggingIndicators: {
+          select: {
+            LTI: true,
+            FA: true,
+            MTI: true,
+            RTW: true,
+            Fatality: true,
+            PPD: true,
+            PTD: true,
+          }
+        }
+      }
+    })
+    res.json(projectData)
 
   } catch (error) {
     console.log(error)
@@ -162,10 +187,36 @@ app.post('/report', async (req, res) => {
   }
 })
 
+// simple login functionality with username
+app.post('/login', async (req, res) => {
+  const {username} = req.body
+  try {
+    const existing = await prisma.Accounts.findUnique({
+      where: {
+        username: username
+      },
+      select: {
+        username: true
+      }
+    })
+    if (!existing) {
+      res.status(404).json({ok:false})
+    }
+    if (existing.username == username) {
+      res.status(200).json({ok:true})
+    } else {
+      res.status(404).json({ok:false})
+    }
+
+  } catch (error) {
+    console.log(error)
+  }
+})
+
 // displays all leading and lagging indicators saved in the database
 app.get('/', async (req, res) => {
   try {
-    const reports = await prisma.project.findMany({
+    const reports = await prisma.Project.findMany({
       include: {
         leadingIndicators: {
           select: {
@@ -184,7 +235,7 @@ app.get('/', async (req, res) => {
               RTW: true,
               Fatality: true,
               PPD: true,
-              PTD: true, 
+              PTD: true,
             }
           }
         }
