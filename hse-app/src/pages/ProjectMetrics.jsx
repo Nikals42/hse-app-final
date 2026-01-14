@@ -16,7 +16,7 @@ export default function ProjectMetrics() {
   const handleSubmit = async (data) => {
   setSubmitted(data);
 
-    const request = await fetch('https://hse-app-demo.vercel.app/report', {
+    const request = await fetch('http://localhost:3000/report', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

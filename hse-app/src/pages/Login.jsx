@@ -10,7 +10,7 @@ export default function Login() {
     if (username.trim() !== "") {
       // Save username to localStorage
       localStorage.setItem("username", username);
-      const request = await fetch('https://hse-app-demo.vercel.app/login', {
+      const request = await fetch('http://localhost:3000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

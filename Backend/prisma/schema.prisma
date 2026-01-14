@@ -35,7 +35,7 @@ model HSE_Report {
 
 model Lagging_Indicators {
   id Int @id @default(autoincrement())
-  projectId Int
+  projectId Int @unique
   LTI Int
   FA Int
   MTI Int

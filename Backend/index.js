@@ -33,7 +33,7 @@ app.get('/api', async (req, res) => {
 // read Projects from json and add them to database
 async function apiProjects() {
   try {
-    const response = await fetch('https://hse-app-e9ye.vercel.app/api')
+    const response = await fetch('http://localhost:3000/api')
     const json = await response.json()
     for (const project of json.data) {
       const name = project.projectCode
@@ -56,7 +56,7 @@ async function apiProjects() {
 // read Lagging indicators from json and add them to database
 async function apiLaggingIndicators() {
   try {
-    const response = await fetch('https://hse-app-e9ye.vercel.app/api')
+    const response = await fetch('http://localhost:3000/api')
     const json = await response.json()
     for (const project of json.data) {
       const name = project.projectCode
@@ -99,8 +99,11 @@ async function apiLaggingIndicators() {
           countPTD = indicator.count
         }
       }
-      const projectLaggingIndicators = await prisma.Lagging_Indicators.create({
-        data: {
+      const projectLaggingIndicators = await prisma.Lagging_Indicators.upsert({
+        where: {
+          projectId: id
+        },
+        update: {
           projectId: Number(id),
           LTI: Number(countLTI),
           FA: Number(countFA),
@@ -108,7 +111,17 @@ async function apiLaggingIndicators() {
           RTW: Number(countRTW),
           Fatality: Number(countFatality),
           PPD: Number(countPPD),
-          PTD: Number(countPTD), 
+          PTD: Number(countPTD),
+        },
+        create: {
+          projectId: Number(id),
+          LTI: Number(countLTI),
+          FA: Number(countFA),
+          MTI: Number(countMTI),
+          RTW: Number(countRTW),
+          Fatality: Number(countFatality),
+          PPD: Number(countPPD),
+          PTD: Number(countPTD),
         }
       })
     }
@@ -203,6 +216,7 @@ app.post('/login', async (req, res) => {
       res.status(404).json({ok:false})
     }
     if (existing.username == username) {
+      callAPI()
       res.status(200).json({ok:true})
     } else {
       res.status(404).json({ok:false})
@@ -248,7 +262,5 @@ app.get('/', async (req, res) => {
 })
 
 app.listen(PORT, () => {
-  //console.log(`Server running on http://localhost:${PORT}`)
-
-  callAPI()
+  console.log(`Server running on http://localhost:${PORT}`)
 });
