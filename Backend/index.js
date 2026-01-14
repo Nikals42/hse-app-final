@@ -218,7 +218,7 @@ app.post('/login', async (req, res) => {
       res.status(404).json({ok:false})
     }
     if (existing.username == username) {
-      callAPI()
+      await callAPI()
       res.status(200).json({ok:true})
     } else {
       res.status(404).json({ok:false})
