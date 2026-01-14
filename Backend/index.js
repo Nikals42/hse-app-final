@@ -33,6 +33,7 @@ app.get('/api', async (req, res) => {
 // read Projects from json and add them to database
 async function apiProjects() {
   try {
+    // const response = await fetch('https://hse-app-backend.vercel.app/api')
     const response = await fetch('http://localhost:3000/api')
     const json = await response.json()
     for (const project of json.data) {
@@ -56,6 +57,7 @@ async function apiProjects() {
 // read Lagging indicators from json and add them to database
 async function apiLaggingIndicators() {
   try {
+    // const response = await fetch('https://hse-app-backend.vercel.app/api') 
     const response = await fetch('http://localhost:3000/api')
     const json = await response.json()
     for (const project of json.data) {
