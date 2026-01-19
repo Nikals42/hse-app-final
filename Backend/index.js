@@ -179,9 +179,9 @@ app.get('/projects/data', async (req, res) => {
   }
 })
 
-// new HSE Reports
+// HSE reports with added timestamp
 app.post('/report', async (req, res) => {
-  const {ProjectID, ...data} = req.body
+  const {ProjectID, timestamp, ...data} = req.body
   const {HSEAudits, safetyWalks, toolboxTalks, workingHours, trainingHours, jobSafetyAnalysis} = data
   try {
     const newReport = await prisma.HSE_Report.create({
@@ -192,7 +192,8 @@ app.post('/report', async (req, res) => {
         toolboxTalks: Number(toolboxTalks),
         workingHours: Number(workingHours),
         trainingHours: Number(trainingHours),
-        jobSafetyAnalysis: Number(jobSafetyAnalysis)
+        jobSafetyAnalysis: Number(jobSafetyAnalysis),
+        timestamp: new Date(timestamp) //timestamp is saved here from frontend
       }
     })
     console.log('Data send to database:', newReport)
