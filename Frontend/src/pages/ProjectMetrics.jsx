@@ -28,7 +28,7 @@ export default function ProjectMetrics() {
     await fetch("http://localhost:3000/report", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ProjectID: id, ...data }),
+      body: JSON.stringify({ ProjectID: id, ...data}),
     });
   };
 
@@ -94,6 +94,9 @@ export default function ProjectMetrics() {
             <pre className="text-sm">
               {JSON.stringify(submitted, null, 2)}
             </pre>
+            <p className="mt-2 text-xs text-gray-400">
+              Timestamp: {new Date(submitted.timestamp).toLocaleString()}
+            </p>
           </div>
         )}
       </div>
