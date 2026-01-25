@@ -32,6 +32,13 @@ export default function MetricForm({ onSubmit }) {
       return;
     }
     
+    // Validate that at least one metric has a value
+    const hasAtLeastOneMetric = Object.values(metrics).some(value => value !== "" && value !== "0");
+    if (!hasAtLeastOneMetric) {
+      setErrorMessage("Please enter at least one metric value before submitting.");
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       await onSubmit({ ...metrics, timestamp });
