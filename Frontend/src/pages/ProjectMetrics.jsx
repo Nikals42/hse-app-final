@@ -25,11 +25,22 @@ export default function ProjectMetrics() {
 
   const handleSubmit = async (data) => {
     setSubmitted(data);
-    await fetch("http://localhost:3000/report", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ProjectID: id, ...data}),
-    });
+    try {
+      const response = await fetch("http://localhost:3000/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ProjectID: id, ...data}),
+      });
+      const result = await response.json();
+      console.log("Report response:", result);
+      if (!response.ok) {
+        console.error("Error submitting report:", result);
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      throw error;
+    }
   };
 
   if (loading) {
@@ -103,3 +114,4 @@ export default function ProjectMetrics() {
     </div>
   );
 }
+ 

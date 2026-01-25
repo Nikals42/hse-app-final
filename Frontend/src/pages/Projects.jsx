@@ -41,23 +41,22 @@ export default function Projects() {
           <p className="text-center text-gray-500">Loading projects...</p>
         ) : (
           <>
-            {/* Tabs */}
-            <div className="flex border-b dark:border-gray-700 mb-6">
-              {projects.map((project) => (
-                <button
-                  key={project.id}
-                  onClick={() => setSelected(project.id)}
-                  className={`flex-1 py-2 text-center border-b-2 transition 
-                    ${
-                      selected === project.id
-                        ? "border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400"
-                        : "border-transparent hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }
-                  `}
-                >
-                  {project.name}
-                </button>
-              ))}
+            {/* Dropdown */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select a Project
+              </label>
+              <select
+                value={selected}
+                onChange={(e) => setSelected(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
+              >
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <button

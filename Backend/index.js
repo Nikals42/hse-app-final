@@ -19,12 +19,12 @@ app.use(cors())
 
 const PORT = 3000
 
+
 // mock API
 app.get('/api', async (req, res) => {
-  try {
+    try {
     const NC_Tool = require('./lagging-indicators.json')
     res.json(NC_Tool)
-
   } catch (error) {
     console.log('Error:', error)
   }
@@ -33,7 +33,7 @@ app.get('/api', async (req, res) => {
 // read Projects from json and add them to database
 async function apiProjects() {
   try {
-    // const response = await fetch('https://hse-app-backend.vercel.app/api')
+    //const response = await fetch('https://hse-app-backend.vercel.app/api')
     const response = await fetch('http://localhost:3000/api')
     const json = await response.json()
     for (const project of json.data) {
@@ -57,7 +57,7 @@ async function apiProjects() {
 // read Lagging indicators from json and add them to database
 async function apiLaggingIndicators() {
   try {
-    // const response = await fetch('https://hse-app-backend.vercel.app/api') 
+    //const response = await fetch('https://hse-app-backend.vercel.app/api') 
     const response = await fetch('http://localhost:3000/api')
     const json = await response.json()
     for (const project of json.data) {
@@ -181,8 +181,8 @@ app.get('/projects/data', async (req, res) => {
 
 // HSE reports with added timestamp
 app.post('/report', async (req, res) => {
-  const {ProjectID, timestamp, ...data} = req.body
-  const {HSEAudits, safetyWalks, toolboxTalks, workingHours, trainingHours, jobSafetyAnalysis} = data
+  const {ProjectID, ...data} = req.body
+  const {HSEAudits, safetyWalks, toolboxTalks, workingHours, trainingHours, jobSafetyAnalysis, timestamp} = data
   try {
     const newReport = await prisma.HSE_Report.create({
       data: {
@@ -193,13 +193,15 @@ app.post('/report', async (req, res) => {
         workingHours: Number(workingHours),
         trainingHours: Number(trainingHours),
         jobSafetyAnalysis: Number(jobSafetyAnalysis),
-        timestamp: new Date(timestamp) //timestamp is saved here from frontend
+        timeStamp: new Date(timestamp) //timestamp is saved here from frontend
       }
     })
     console.log('Data send to database:', newReport)
+    res.status(201).json({ok: true, data: newReport})
 
   } catch (error) {
     console.log('Error:', error)
+    res.status(500).json({ok: false, error: error.message})
   }
 })
 
