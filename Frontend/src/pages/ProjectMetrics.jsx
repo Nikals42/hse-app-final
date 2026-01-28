@@ -60,6 +60,8 @@ export default function ProjectMetrics() {
       ? laggingIndicatorsRaw[0] ?? {}
       : laggingIndicatorsRaw ?? {};
 
+  const isNonProjectPersonnel = project.name === "NON_PROJECT_PERSONNEL";
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white">
       <Navbar />
@@ -150,7 +152,10 @@ export default function ProjectMetrics() {
         {activeTab === "metrics" && (
           <>
             {/* Leading indicators form */}
-            <MetricForm onSubmit={handleSubmit} />
+            <MetricForm
+              onSubmit={handleSubmit}
+              allowedMetricKeys={isNonProjectPersonnel ? ["workingHours"] : undefined}
+            />
 
             {submitted && (
               <div className="mt-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-700">
