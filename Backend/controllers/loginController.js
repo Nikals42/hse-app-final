@@ -1,6 +1,8 @@
 import { check } from "../repositories/loginRepository.js";
 import * as callAPI from "../lib/callAPI.js";
 
+// simple username based login
+// successfull login fetches project data from API
 export const login = async (req, res) => {
   try {
     const { username } = req.body;
