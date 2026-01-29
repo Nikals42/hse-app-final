@@ -38,20 +38,21 @@ export const apiLaggingIndicators = async function () {
         },
       });
       const id = findId.id;
-      let countLTI;
+      let countLWC;
       let countFA;
       let countMTI;
       let countRTW;
       let countFatality;
       let countPPD;
       let countPTD;
+      let timeStamp;
       const indicators = project.laggingIndicators;
       for (const indicator of indicators) {
         if (
           indicator.text ==
           "[LTI] Lost time incident (Doctor / medic involved, > 1 day of sick leave)"
         ) {
-          countLTI = indicator.count;
+          countLWC = indicator.count;
         }
         if (
           indicator.text ==
@@ -86,6 +87,9 @@ export const apiLaggingIndicators = async function () {
         ) {
           countPTD = indicator.count;
         }
+        if (indicator.text == "Timestamp") {
+          timeStamp = indicator.count;
+        }
       }
       await prisma.lagging_Indicators.upsert({
         where: {
@@ -93,23 +97,25 @@ export const apiLaggingIndicators = async function () {
         },
         update: {
           projectId: Number(id),
-          LTI: Number(countLTI),
+          LWC: Number(countLWC),
           FA: Number(countFA),
           MTI: Number(countMTI),
           RTW: Number(countRTW),
           Fatality: Number(countFatality),
           PPD: Number(countPPD),
           PTD: Number(countPTD),
+          timeStamp: new Date(timeStamp),
         },
         create: {
           projectId: Number(id),
-          LTI: Number(countLTI),
+          LWC: Number(countLWC),
           FA: Number(countFA),
           MTI: Number(countMTI),
           RTW: Number(countRTW),
           Fatality: Number(countFatality),
           PPD: Number(countPPD),
           PTD: Number(countPTD),
+          timeStamp: new Date(timeStamp),
         },
       });
     }
