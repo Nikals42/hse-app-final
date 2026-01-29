@@ -3,6 +3,7 @@ import {
   getProjects,
 } from "../repositories/projectRepository.js";
 
+// for Frontend to retrieve project names and id
 export const readAll = async (req, res) => {
   try {
     const projects = await getProjects();
@@ -12,6 +13,7 @@ export const readAll = async (req, res) => {
   }
 };
 
+// for Frontend to retrieve project names, id and lagging indicators
 export const readData = async (req, res) => {
   try {
     const projectData = await getProjectData();

@@ -2,7 +2,7 @@ import prisma from "../lib/prisma.js";
 
 export const check = async (username) => {
   try {
-    const existing = await prisma.Accounts.findUnique({
+    const existing = await prisma.accounts.findUnique({
       where: {
         username: username,
       },

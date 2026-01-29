@@ -1,5 +1,6 @@
 import { newReport } from "../repositories/reportRepository.js";
 
+// new HSE reports
 export const report = async (req, res) => {
   try {
     const send = await newReport(req);

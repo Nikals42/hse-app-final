@@ -1,7 +1,7 @@
 import prisma from "../lib/prisma.js";
 
 export const getProjects = async () => {
-  const projects = await prisma.Project.findMany({
+  const projects = await prisma.project.findMany({
     select: {
       id: true,
       name: true,
@@ -12,7 +12,7 @@ export const getProjects = async () => {
 };
 
 export const getProjectData = async () => {
-  const projectData = await prisma.Project.findMany({
+  const projectData = await prisma.project.findMany({
     include: {
       laggingIndicators: {
         select: {

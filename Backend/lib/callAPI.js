@@ -7,7 +7,7 @@ export const apiProjects = async function () {
     const json = await response.json();
     for (const project of json.data) {
       const name = project.projectCode;
-      await prisma.Project.upsert({
+      await prisma.project.upsert({
         where: {
           name: name,
         },
@@ -29,7 +29,7 @@ export const apiLaggingIndicators = async function () {
     const json = await response.json();
     for (const project of json.data) {
       const name = project.projectCode;
-      const findId = await prisma.Project.findUnique({
+      const findId = await prisma.project.findUnique({
         where: {
           name: name,
         },
@@ -87,7 +87,7 @@ export const apiLaggingIndicators = async function () {
           countPTD = indicator.count;
         }
       }
-      const projectLaggingIndicators = await prisma.Lagging_Indicators.upsert({
+      await prisma.lagging_Indicators.upsert({
         where: {
           projectId: id,
         },

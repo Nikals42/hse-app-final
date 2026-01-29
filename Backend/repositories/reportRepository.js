@@ -10,7 +10,7 @@ export const newReport = async (req) => {
     trainingHours,
     jobSafetyAnalysis,
   } = data;
-  const newReport = await prisma.HSE_Report.create({
+  const newReport = await prisma.hSE_Report.create({
     data: {
       projectId: Number(ProjectID),
       HSEAudits: Number(HSEAudits),
