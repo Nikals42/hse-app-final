@@ -23,13 +23,13 @@ model Project {
 model HSE_Report {
   id Int @id @default(autoincrement())
   projectId Int
-  timeStamp DateTime @default(now())
   HSEAudits Int
   safetyWalks Int
   toolboxTalks Int
   workingHours Int
   trainingHours Int
   jobSafetyAnalysis Int
+  timeStamp DateTime @default(now())
   
   project Project @relation(fields: [projectId], references: [id])
 }
