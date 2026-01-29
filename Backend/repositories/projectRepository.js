@@ -16,13 +16,14 @@ export const getProjectData = async () => {
     include: {
       laggingIndicators: {
         select: {
-          LTI: true,
+          LWC: true,
           FA: true,
           MTI: true,
           RTW: true,
           Fatality: true,
           PPD: true,
           PTD: true,
+          timeStamp: true,
         },
       },
     },

@@ -14,41 +14,42 @@ datasource db {
 }
 
 model Project {
-  id Int @id @default(autoincrement())
-  name String @unique
+  id                Int                  @id @default(autoincrement())
+  name              String               @unique
   leadingIndicators HSE_Report[]
   laggingIndicators Lagging_Indicators[]
 }
 
 model HSE_Report {
-  id Int @id @default(autoincrement())
-  projectId Int
-  HSEAudits Int
-  safetyWalks Int
-  toolboxTalks Int
-  workingHours Int
-  trainingHours Int
-  jobSafetyAnalysis Int
-  timeStamp DateTime @default(now())
-  
+  id                Int      @id @default(autoincrement())
+  projectId         Int      @default(0)
+  HSEAudits         Int      @default(0)
+  safetyWalks       Int      @default(0)
+  toolboxTalks      Int      @default(0)
+  workingHours      Int      @default(0)
+  trainingHours     Float    @default(0)
+  jobSafetyAnalysis Int      @default(0)
+  timeStamp         DateTime
+
   project Project @relation(fields: [projectId], references: [id])
 }
 
 model Lagging_Indicators {
-  id Int @id @default(autoincrement())
-  projectId Int @unique
-  LTI Int
-  FA Int
-  MTI Int
-  RTW Int
-  Fatality Int
-  PPD Int
-  PTD Int
+  id        Int      @id @default(autoincrement())
+  projectId Int      @unique
+  LWC       Int      @default(0)
+  FA        Int      @default(0)
+  MTI       Int      @default(0)
+  RTW       Int      @default(0)
+  Fatality  Int      @default(0)
+  PPD       Int      @default(0)
+  PTD       Int      @default(0)
+  timeStamp DateTime
 
   project Project @relation(fields: [projectId], references: [id])
 }
 
 model Accounts {
-  id Int @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   username String @unique
 }

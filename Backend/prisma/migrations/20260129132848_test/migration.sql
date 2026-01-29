@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "HSE_Report" ALTER COLUMN "trainingHours" SET DATA TYPE DOUBLE PRECISION;

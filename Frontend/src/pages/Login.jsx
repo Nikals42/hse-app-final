@@ -10,7 +10,7 @@ export default function Login() {
     if (username.trim() !== "") {
       // Save username to localStorage
       localStorage.setItem("username", username);
-      // const request = await fetch('https://hse-app-backend.vercel.app/login', {
+      //const request = await fetch('https://hse-app-backend.vercel.app/login', {
       const request = await fetch('http://localhost:3000/login', {
         method: 'POST',
         headers: {
@@ -18,7 +18,8 @@ export default function Login() {
         },
         body: JSON.stringify({username: username})
       })
-      console.log(request)
+      const data = await request.json()
+      console.log(data)
       if (request.ok) {
         navigate("/projects");
       } else {
