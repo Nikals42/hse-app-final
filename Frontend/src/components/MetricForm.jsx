@@ -1,12 +1,8 @@
 import { useState, useEffect } from "react";
 import { editableMetricDefinitions } from "../constants/editableMetricsDefinitions";
 
-export default function MetricForm({ onSubmit, allowedMetricKeys }) {
-  const allowedDefinitions = editableMetricDefinitions.filter(
-    (m) => !allowedMetricKeys || allowedMetricKeys.includes(m.key)
-  );
-  const isRestrictedToWorkingHours =
-    allowedMetricKeys?.length === 1 && allowedMetricKeys[0] === "workingHours";
+export default function MetricForm({ onSubmit }) {
+  const allowedDefinitions = editableMetricDefinitions;
 
   const [metrics, setMetrics] = useState(
     Object.fromEntries(editableMetricDefinitions.map((m) => [m.key, ""]))
@@ -27,20 +23,6 @@ export default function MetricForm({ onSubmit, allowedMetricKeys }) {
     const today = new Date().toISOString().split('T')[0];
     setTimestamp(today);
   }, []);
-
-  useEffect(() => {
-    if (selectedMetricKey && !allowedDefinitions.find((m) => m.key === selectedMetricKey)) {
-      setSelectedMetricKey("");
-      setInputValue("");
-    }
-  }, [allowedDefinitions, selectedMetricKey]);
-
-  useEffect(() => {
-    if (isRestrictedToWorkingHours) {
-      setSelectedMetricKey("workingHours");
-      setInputValue(metrics.workingHours || "");
-    }
-  }, [isRestrictedToWorkingHours, metrics.workingHours]);
 
   const handleMetricSelect = (key) => {
     setSelectedMetricKey(key);
@@ -189,15 +171,14 @@ export default function MetricForm({ onSubmit, allowedMetricKeys }) {
         </div>
 
         {/* One-by-one metric input */}
-        {!isRestrictedToWorkingHours && (
-          <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700
-                     bg-white dark:bg-gray-900 shadow-sm">
-            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
-              Select Metric to Input
-            </label>
+        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700
+                   bg-white dark:bg-gray-900 shadow-sm">
+          <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
+            Select Metric to Input
+          </label>
 
-            <select
-              value={selectedMetricKey}
+          <select
+            value={selectedMetricKey}
               onChange={(e) => handleMetricSelect(e.target.value)}
               disabled={isSubmitting}
               className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600
@@ -212,18 +193,17 @@ export default function MetricForm({ onSubmit, allowedMetricKeys }) {
                 </option>
               ))}
             </select>
-          </div>
-        )}
+        </div>
 
         {/* Input field for selected metric */}
-        {(selectedMetricKey || isRestrictedToWorkingHours) && (
+        {selectedMetricKey && (
           <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-700
                      bg-blue-50 dark:bg-gray-900 shadow-sm">
             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
-              {editableMetricDefinitions.find((m) => m.key === (isRestrictedToWorkingHours ? "workingHours" : selectedMetricKey))?.label}
+              {editableMetricDefinitions.find((m) => m.key === selectedMetricKey)?.label}
             </label>
 
-            {(isRestrictedToWorkingHours ? "workingHours" : selectedMetricKey) === "trainingHours" ? (
+            {selectedMetricKey === "trainingHours" ? (
               <div className="space-y-3">
                 <div className="flex gap-2">
                   <input

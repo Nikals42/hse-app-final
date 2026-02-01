@@ -60,13 +60,46 @@ export default function ProjectMetrics() {
       ? laggingIndicatorsRaw[0] ?? {}
       : laggingIndicatorsRaw ?? {};
 
-  const isNonProjectPersonnel = project.name === "NON_PROJECT_PERSONNEL";
-
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white">
       <Navbar />
 
-      <div className="flex gap-4 mt-12 px-4 max-w-6xl mx-auto">
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl max-w-md mx-4">
+            <div className="text-center">
+              <div className="text-6xl mb-4">✓</div>
+              <h3 className="text-2xl font-bold mb-2 text-green-600 dark:text-green-400">
+                Success!
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Your metrics have been submitted successfully.
+              </p>
+              <button
+                onClick={() => navigate("/projects")}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+              >
+                Return to Projects
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-12 px-4 max-w-6xl mx-auto">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate("/projects")}
+          className="flex items-center gap-2 mb-4 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Projects
+        </button>
+
+        <div className="flex gap-4">
         {/* Hamburger Menu Button */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
@@ -154,20 +187,7 @@ export default function ProjectMetrics() {
             {/* Leading indicators form */}
             <MetricForm
               onSubmit={handleSubmit}
-              allowedMetricKeys={isNonProjectPersonnel ? ["workingHours"] : undefined}
             />
-
-            {submitted && (
-              <div className="mt-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-700">
-                <h3 className="font-semibold mb-2">Submitted:</h3>
-                <pre className="text-sm">
-                  {JSON.stringify(submitted, null, 2)}
-                </pre>
-                <p className="mt-2 text-xs text-gray-400">
-                  Timestamp: {new Date(submitted.timestamp).toLocaleString()}
-                </p>
-              </div>
-            )}
           </>
         )}
 
@@ -201,6 +221,7 @@ export default function ProjectMetrics() {
             )}
           </div>
         )}
+        </div>
         </div>
       </div>
     </div>
