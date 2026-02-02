@@ -1,15 +1,17 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import MetricForm from "../components/MetricForm";
 
 export default function ProjectMetrics() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [submitted, setSubmitted] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("metrics"); // "metrics" or "lagging"
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:3000/projects/data")
@@ -39,6 +41,8 @@ export default function ProjectMetrics() {
         console.error("Error submitting report:", result);
         throw new Error(result.error);
       }
+      // Show success modal
+      setShowSuccessModal(true);
     } catch (error) {
       console.error("Error submitting report:", error);
       throw error;
