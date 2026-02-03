@@ -24,10 +24,10 @@ export const readContractors = async (req, res) => {
   }
 };
 
-// for Frontend to retrieve project names, id and lagging indicators
+// for Frontend to retrieve lagging indicators
 export const readData = async (req, res) => {
   try {
-    const projectData = await getProjectData();
+    const projectData = await getProjectData(req);
     return res.json(projectData);
   } catch (error) {
     console.log(error);
