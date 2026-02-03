@@ -20,6 +20,12 @@ model Project {
   laggingIndicators Lagging_Indicators[]
 }
 
+model Contractors {
+  id                Int                  @id @default(autoincrement())
+  name              String               @unique
+  laggingIndicators Lagging_Indicators[]
+}
+
 model HSE_Report {
   id                Int      @id @default(autoincrement())
   projectId         Int      @default(0)
@@ -35,18 +41,20 @@ model HSE_Report {
 }
 
 model Lagging_Indicators {
-  id        Int      @id @default(autoincrement())
-  projectId Int      @unique
-  LWC       Int      @default(0)
-  FA        Int      @default(0)
-  MTI       Int      @default(0)
-  RTW       Int      @default(0)
-  Fatality  Int      @default(0)
-  PPD       Int      @default(0)
-  PTD       Int      @default(0)
-  timeStamp DateTime
+  id           Int      @id @default(autoincrement())
+  projectId    Int      @default(0)
+  contractorId Int      @default(0)
+  LWC          Int      @default(0)
+  FA           Int      @default(0)
+  MTI          Int      @default(0)
+  RTW          Int      @default(0)
+  Fatality     Int      @default(0)
+  PPD          Int      @default(0)
+  PTD          Int      @default(0)
+  timeStamp    DateTime
 
-  project Project @relation(fields: [projectId], references: [id])
+  project    Project     @relation(fields: [projectId], references: [id])
+  contractor Contractors @relation(fields: [contractorId], references: [id])
 }
 
 model Accounts {

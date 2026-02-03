@@ -11,6 +11,25 @@ export const getProjects = async () => {
   return projects;
 };
 
+export const getContractors = async () => {
+  const projectId = 1;
+  const contractors = await prisma.lagging_Indicators.findMany({
+    where: { projectId: projectId },
+    distinct: ["contractorId"],
+    select: {
+      contractorId: true,
+      contractor: {
+        select: { name: true },
+      },
+    },
+  });
+
+  return contractors.map((c) => ({
+    contractorId: c.contractorId,
+    contractorName: c.contractor.name,
+  }));
+};
+
 export const getProjectData = async () => {
   const projectData = await prisma.project.findMany({
     include: {

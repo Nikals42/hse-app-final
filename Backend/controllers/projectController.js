@@ -1,4 +1,5 @@
 import {
+  getContractors,
   getProjectData,
   getProjects,
 } from "../repositories/projectRepository.js";
@@ -8,6 +9,16 @@ export const readAll = async (req, res) => {
   try {
     const projects = await getProjects();
     return res.json(projects);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// for Frontend to retrieve contractors working in a project
+export const readContractors = async (req, res) => {
+  try {
+    const contractors = await getContractors();
+    return res.json(contractors);
   } catch (error) {
     console.log(error);
   }
