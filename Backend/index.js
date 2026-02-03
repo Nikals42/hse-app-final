@@ -1,6 +1,5 @@
-// Instantiate Prisma Client: https://www.prisma.io/docs/getting-started/prisma-orm/quickstart/prisma-postgres
-// Update Prisma schema changes to database: npx prisma migrate dev --name
-// Create/update Prisma Client: npx prisma generate
+// npx prisma migrate dev --name
+// npx prisma generate
 // npx prisma db seed
 
 import {} from "dotenv/config";
@@ -19,8 +18,8 @@ const PORT = 3000;
 
 app.get("/api/nc_tool", apiController.api);
 app.get("/projects", projectController.readAll);
-app.get("/projects/data", projectController.readData);
 app.get("/projects/contractors", projectController.readContractors);
+app.get("/projects/data", projectController.readData);
 
 app.post("/report", reportController.report);
 app.post("/login", loginController.login);
