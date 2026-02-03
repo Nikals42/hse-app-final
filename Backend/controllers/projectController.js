@@ -17,7 +17,7 @@ export const readAll = async (req, res) => {
 // for Frontend to retrieve contractors working in a project
 export const readContractors = async (req, res) => {
   try {
-    const contractors = await getContractors();
+    const contractors = await getContractors(req);
     return res.json(contractors);
   } catch (error) {
     console.log(error);
