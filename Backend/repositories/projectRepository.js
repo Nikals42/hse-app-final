@@ -12,9 +12,9 @@ export const getProjects = async () => {
 };
 
 export const getContractors = async (req) => {
-  const { projectId } = req.body;
+  const projectId = req.query.projectId;
   const contractors = await prisma.lagging_Indicators.findMany({
-    where: { projectId: projectId },
+    where: { projectId: Number(projectId) },
     distinct: ["contractorId"],
     select: {
       contractorId: true,
@@ -29,12 +29,12 @@ export const getContractors = async (req) => {
     contractorName: c.contractor.name,
   }));
 };
-/*
+
 export const getProjectData = async (req) => {
-  const { projectId } = req.body;
+  const projectId = req.query.projectId;
   const projectData = await prisma.lagging_Indicators.groupBy({
     by: ["contractorId", "projectId"],
-    where: { projectId: projectId },
+    where: { projectId: Number(projectId) },
     _sum: {
       LWC: true,
       FA: true,
@@ -58,8 +58,10 @@ export const getProjectData = async (req) => {
     PTD: d._sum["PTD"],
   }));
 };
-*/
-export const getProjectData = async () => {
+/*
+export const getProjectData = async (req) => {
+  const projectId = req.query.projectId;
+  console.log(projectId);
   const projectData = await prisma.project.findMany({
     include: {
       laggingIndicators: {
@@ -79,3 +81,4 @@ export const getProjectData = async () => {
 
   return projectData;
 };
+*/
