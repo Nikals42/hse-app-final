@@ -1,7 +1,7 @@
 import prisma from "../lib/prisma.js";
 
 export const newReport = async (req) => {
-  const { ProjectID, timestamp, ...data } = req.body;
+  const { ProjectID, timestamp, contractor, ...data } = req.body;
   const {
     HSEAudits,
     safetyWalks,
@@ -13,7 +13,7 @@ export const newReport = async (req) => {
   const newReport = await prisma.hSE_Report.create({
     data: {
       projectId: Number(ProjectID),
-      contractorId: Number(1),
+      contractorId: Number(contractor),
       HSEAudits: Number(HSEAudits),
       safetyWalks: Number(safetyWalks),
       toolboxTalks: Number(toolboxTalks),

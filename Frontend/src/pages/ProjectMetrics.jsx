@@ -16,14 +16,21 @@ export default function ProjectMetrics() {
 useEffect(() => {
   setLoading(true);
 
-  fetch(`http://localhost:3000/projects/data?projectId=${id}`)
-    .then((res) => {
-      if (!res.ok) throw new Error("Failed to fetch project data");
-      return res.json();
-    }) 
-    .then((data) => {
-      const foundProject = data.find((p) => p.id === Number(id));
-      setProject(foundProject ?? null);
+  // Fetch both project info and lagging indicators
+  Promise.all([
+    fetch(`https://localhost:3000/projects`).then(res => res.json()),
+    fetch(`https://localhost:3000/projects/data?projectId=${id}`).then(res => res.json())
+  ])
+    .then(([projects, laggingData]) => {
+      const foundProject = projects.find((p) => p.id === Number(id));
+      if (foundProject) {
+        setProject({
+          ...foundProject,
+          laggingIndicators: laggingData
+        });
+      } else {
+        setProject(null);
+      }
       setLoading(false);
     })
     .catch((err) => {
@@ -36,17 +43,26 @@ useEffect(() => {
   const handleSubmit = async (data) => {
     setSubmitted(data);
     try {
-      const response = await fetch("http://localhost:3000/report", {
+      const response = await fetch("https://localhost:3000/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ProjectID: id, ...data}),
       });
+      
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({ error: "Unknown error" }));
+        console.error("Error submitting report:", result);
+        throw new Error(result.error || `Server error: ${response.status}`);
+      }
+      
       const result = await response.json();
       console.log("Report response:", result);
-      if (!response.ok) {
-        console.error("Error submitting report:", result);
-        throw new Error(result.error);
+      
+      // Verify the data was saved correctly
+      if (!result || result.error) {
+        throw new Error(result?.error || "Failed to save metrics to database");
       }
+      
       // Show success modal
       setShowSuccessModal(true);
     } catch (error) {
@@ -97,11 +113,11 @@ useEffect(() => {
         </div>
       )}
 
-      <div className="mt-12 px-4 max-w-6xl mx-auto">
+      <div className="mt-4 sm:mt-12 px-4 max-w-6xl mx-auto pb-6">
         {/* Back Button */}
         <button
           onClick={() => navigate("/projects")}
-          className="flex items-center gap-2 mb-4 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-700 transition font-medium"
+          className="flex items-center gap-2 mb-4 px-4 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition font-medium min-h-[44px]"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -109,11 +125,12 @@ useEffect(() => {
           Back to Projects
         </button>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
         {/* Hamburger Menu Button */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="flex flex-col gap-1.5 justify-center items-center w-10 h-10 rounded-lg bg-white dark:bg-gray-800 shadow hover:bg-gray-50 dark:hover:bg-gray-700 transition md:hidden"
+          className="flex flex-col gap-1.5 justify-center items-center w-12 h-12 rounded-lg bg-white dark:bg-gray-800 shadow hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition md:hidden"
+          aria-label="Toggle menu"
         >
           <span className={`block w-6 h-0.5 bg-gray-800 dark:bg-white transition-transform ${
             menuOpen ? 'rotate-45 translate-y-2' : ''
@@ -186,8 +203,8 @@ useEffect(() => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-white dark:bg-gray-800 p-8 rounded-xl shadow">
-          <h2 className="text-2xl font-semibold text-center mb-6">
+        <div className="flex-1 bg-white dark:bg-gray-800 p-4 sm:p-6 md:p-8 rounded-xl shadow">
+          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4 sm:mb-6">
             {project.name} — Metrics
           </h2>
 
@@ -197,6 +214,7 @@ useEffect(() => {
             {/* Leading indicators form */}
             <MetricForm
               onSubmit={handleSubmit}
+              projectId={id}
             />
           </>
         )}

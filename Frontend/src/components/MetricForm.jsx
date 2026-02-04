@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { editableMetricDefinitions } from "../constants/editableMetricsDefinitions";
 
-export default function MetricForm({ onSubmit }) {
+export default function MetricForm({ onSubmit, projectId }) {
   const allowedDefinitions = editableMetricDefinitions;
 
   const [metrics, setMetrics] = useState(
@@ -17,12 +17,38 @@ export default function MetricForm({ onSubmit }) {
   const [selectedMetricKey, setSelectedMetricKey] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [trainingDetails, setTrainingDetails] = useState({ people: "", length: "", minutes: "" });
+  const [trainingInputMode, setTrainingInputMode] = useState("direct"); // "direct" or "calculated"
+  
+  // Contractor state
+  const [contractors, setContractors] = useState([]);
+  const [selectedContractor, setSelectedContractor] = useState("");
+  const [loadingContractors, setLoadingContractors] = useState(false);
+  const [workingHoursContractor, setWorkingHoursContractor] = useState(null); // Store contractor name for display
 
   // Set default date to today when component loads
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setTimestamp(today);
   }, []);
+
+  // Fetch contractors from backend
+  useEffect(() => {
+    if (!projectId) return;
+    
+    setLoadingContractors(true);
+    fetch(`https://localhost:3000/projects/contractors?projectId=${projectId}`)
+      .then(res => res.json())
+      .then(data => {
+        setContractors(data || []);
+      })
+      .catch(err => {
+        console.error("Failed to fetch contractors:", err);
+        setContractors([]);
+      })
+      .finally(() => {
+        setLoadingContractors(false);
+      });
+  }, [projectId]);
 
   const handleMetricSelect = (key) => {
     setSelectedMetricKey(key);
@@ -33,8 +59,13 @@ export default function MetricForm({ onSubmit }) {
         length: prev.length ?? "",
         minutes: prev.minutes ?? "",
       }));
+      setTrainingInputMode("direct"); // Reset to direct mode
     } else {
       setInputValue(metrics[key] || "");
+    }
+    // Reset contractor selection when changing metrics
+    if (key === "workingHours") {
+      setSelectedContractor("");
     }
   };
 
@@ -66,19 +97,40 @@ export default function MetricForm({ onSubmit }) {
     if (!selectedMetricKey) return;
 
     if (selectedMetricKey === "trainingHours") {
-      const people = Number(trainingDetails.people);
-      const length = Number(trainingDetails.length);
-      const minutes = Number(trainingDetails.minutes || 0);
-      if (people < 0 || length < 0 || minutes < 0) return;
-      if (!people || (!length && !minutes)) return;
+      if (trainingInputMode === "direct") {
+        // Direct input mode
+        if (inputValue !== "") {
+          const numericValue = Number(inputValue);
+          if (numericValue < 0) return;
+          setMetrics({ ...metrics, trainingHours: inputValue });
+          setTrainingDetails({ people: "", length: "", minutes: "" }); // Clear calculated details
+        } else {
+          return;
+        }
+      } else {
+        // Calculated mode
+        const people = Number(trainingDetails.people);
+        const length = Number(trainingDetails.length);
+        const minutes = Number(trainingDetails.minutes || 0);
+        if (people < 0 || length < 0 || minutes < 0) return;
+        if (!people || (!length && !minutes)) return;
 
-      const totalHours = length + minutes / 60;
-      const total = people * totalHours;
-      setMetrics({ ...metrics, trainingHours: String(total) });
+        const totalHours = length + minutes / 60;
+        const total = people * totalHours;
+        setMetrics({ ...metrics, trainingHours: String(total) });
+      }
     } else if (inputValue !== "") {
       const numericValue = Number(inputValue);
       if (numericValue < 0) return;
       setMetrics({ ...metrics, [selectedMetricKey]: inputValue });
+      
+      // Store contractor info for workingHours
+      if (selectedMetricKey === "workingHours" && selectedContractor) {
+        const contractor = contractors.find(c => c.contractorId === parseInt(selectedContractor));
+        if (contractor) {
+          setWorkingHoursContractor(contractor.contractorName);
+        }
+      }
     } else {
       return;
     }
@@ -86,6 +138,17 @@ export default function MetricForm({ onSubmit }) {
     // Auto-reset for next metric input
     setSelectedMetricKey("");
     setInputValue("");
+  };
+
+  const handleDeleteMetric = (key) => {
+    setMetrics({ ...metrics, [key]: "" });
+    if (key === "trainingHours") {
+      setTrainingDetails({ people: "", length: "", minutes: "" });
+    }
+    if (key === "workingHours") {
+      setWorkingHoursContractor(null);
+      setSelectedContractor("");
+    }
   };
 
   const handleSubmitMetrics = async (e) => {
@@ -105,9 +168,20 @@ export default function MetricForm({ onSubmit }) {
       return;
     }
     
+    // Validate contractor selection for working hours
+    if (metrics.workingHours && metrics.workingHours !== "" && metrics.workingHours !== "0" && !selectedContractor) {
+      setErrorMessage("Please select a contractor for working hours before submitting.");
+      return;
+    }
+    
     setIsSubmitting(true);
+    setSuccessMessage("");
     try {
-      await onSubmit({ ...metrics, timestamp });
+      const submissionData = { ...metrics, timestamp };
+      if (selectedContractor) {
+        submissionData.contractor = selectedContractor;
+      }
+      await onSubmit(submissionData);
       // Reset form on successful submission
       setMetrics(
         Object.fromEntries(editableMetricDefinitions.map((m) => [m.key, ""]))
@@ -117,12 +191,16 @@ export default function MetricForm({ onSubmit }) {
       setSelectedMetricKey("");
       setInputValue("");
       setTrainingDetails({ people: "", length: "", minutes: "" });
+      setSelectedContractor("");
+      setWorkingHoursContractor(null);
       
-      // Show success message
-      setSuccessMessage("Metrics submitted successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+
     } catch (error) {
       console.error("Submission failed:", error);
+      // Show error message
+      const errorMsg = error.message || "Failed to submit metrics. Please try again.";
+      setErrorMessage(`Submission failed: ${errorMsg}`);
+      setTimeout(() => setErrorMessage(""), 8000);
     } finally {
       setIsSubmitting(false);
     }
@@ -152,8 +230,8 @@ export default function MetricForm({ onSubmit }) {
       <form onSubmit={handleSubmitMetrics} className="mt-6 space-y-4">
 
         {/* Timestamp input */}
-        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700
-                   bg-white dark:bg-gray-900 shadow-sm">
+        <div className="p-3 sm:p-4 rounded-xl border border-gray-200 dark:border-gray-700
+                   bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
           <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
             Date
           </label>
@@ -164,14 +242,21 @@ export default function MetricForm({ onSubmit }) {
             value={timestamp}
             onChange={(e) => setTimestamp(e.target.value)}
             max={today}
-            className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600
+            className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600
                      bg-gray-50 dark:bg-gray-800
-                     focus:ring-2 focus:ring-blue-500"
+                     focus:ring-2 focus:ring-blue-500 text-base box-border"
+            style={{ 
+              fontSize: '16px', 
+              maxWidth: '100%',
+              minWidth: '0',
+              width: '100%',
+              WebkitAppearance: 'none'
+            }}
           />
         </div>
 
         {/* One-by-one metric input */}
-        <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700
+        <div className="p-3 sm:p-4 rounded-xl border border-gray-200 dark:border-gray-700
                    bg-white dark:bg-gray-900 shadow-sm">
           <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
             Select Metric to Input
@@ -181,9 +266,10 @@ export default function MetricForm({ onSubmit }) {
             value={selectedMetricKey}
               onChange={(e) => handleMetricSelect(e.target.value)}
               disabled={isSubmitting}
-              className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600
+              className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600
                        bg-gray-50 dark:bg-gray-800
-                       focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                       focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-base"
+              style={{ fontSize: '16px' }}
             >
               <option value="">-- Choose a metric --</option>
               {allowedDefinitions.map(({ key, label }) => (
@@ -197,85 +283,182 @@ export default function MetricForm({ onSubmit }) {
 
         {/* Input field for selected metric */}
         {selectedMetricKey && (
-          <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-700
-                     bg-blue-50 dark:bg-gray-900 shadow-sm">
+          <div className="p-3 sm:p-4 rounded-xl border border-blue-200 dark:border-blue-700
+                     bg-blue-50 dark:bg-gray-900 shadow-sm overflow-hidden">
             <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
               {editableMetricDefinitions.find((m) => m.key === selectedMetricKey)?.label}
             </label>
 
             {selectedMetricKey === "trainingHours" ? (
               <div className="space-y-3">
+                {/* Mode selector */}
+                <div className="flex gap-2 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTrainingInputMode("direct");
+                      setTrainingDetails({ people: "", length: "", minutes: "" });
+                    }}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition ${
+                      trainingInputMode === "direct"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    Direct Input
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTrainingInputMode("calculated");
+                      setInputValue("");
+                    }}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition ${
+                      trainingInputMode === "calculated"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    Calculate
+                  </button>
+                </div>
+
+                {trainingInputMode === "direct" ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={inputValue}
+                      onChange={handleInputChange}
+                      disabled={isSubmitting}
+                      min="0"
+                      placeholder="Enter total hours"
+                      autoFocus
+                      className="flex-1 p-3 rounded-lg border border-gray-300 dark:border-gray-600
+                               bg-gray-50 dark:bg-gray-800
+                               focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-base"
+                      style={{ fontSize: '16px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveMetric}
+                      disabled={isSubmitting || inputValue === ""}
+                      className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-nowrap"
+                    >
+                      Save
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="number"
+                        value={trainingDetails.people}
+                        onChange={handleTrainingDetailChange("people")}
+                        disabled={isSubmitting}
+                        min="0"
+                        placeholder="# People"
+                        autoFocus
+                        className="flex-1 p-3 rounded-lg border border-gray-300 dark:border-gray-600
+                                 bg-gray-50 dark:bg-gray-800
+                                 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-base"
+                        style={{ fontSize: '16px' }}
+                      />
+                      <input
+                        type="number"
+                        value={trainingDetails.length}
+                        onChange={handleTrainingDetailChange("length")}
+                        disabled={isSubmitting}
+                        min="0"
+                        placeholder="Hours"
+                        className="flex-1 p-3 rounded-lg border border-gray-300 dark:border-gray-600
+                                 bg-gray-50 dark:bg-gray-800
+                                 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-base"
+                        style={{ fontSize: '16px' }}
+                      />
+                      <input
+                        type="number"
+                        value={trainingDetails.minutes}
+                        onChange={handleTrainingDetailChange("minutes")}
+                        disabled={isSubmitting}
+                        min="0"
+                        placeholder="Min"
+                        className="flex-1 p-3 rounded-lg border border-gray-300 dark:border-gray-600
+                                 bg-gray-50 dark:bg-gray-800
+                                 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-base"
+                        style={{ fontSize: '16px' }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleSaveMetric}
+                      disabled={
+                        isSubmitting ||
+                        trainingDetails.people === "" ||
+                        (trainingDetails.length === "" && trainingDetails.minutes === "")
+                      }
+                      className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                      Save
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
                 <div className="flex gap-2">
                   <input
                     type="number"
-                    value={trainingDetails.people}
-                    onChange={handleTrainingDetailChange("people")}
+                    value={inputValue}
+                    onChange={handleInputChange}
                     disabled={isSubmitting}
                     min="0"
-                    placeholder="Number of people"
+                    placeholder="Enter value"
                     autoFocus
-                    className="flex-1 p-2 rounded-lg border border-gray-300 dark:border-gray-600
+                    className="flex-1 p-3 rounded-lg border border-gray-300 dark:border-gray-600
                              bg-gray-50 dark:bg-gray-800
-                             focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                             focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-base"
+                    style={{ fontSize: '16px' }}
                   />
-                  <input
-                    type="number"
-                    value={trainingDetails.length}
-                    onChange={handleTrainingDetailChange("length")}
-                    disabled={isSubmitting}
-                    min="0"
-                    placeholder="Length (hours)"
-                    className="flex-1 p-2 rounded-lg border border-gray-300 dark:border-gray-600
-                             bg-gray-50 dark:bg-gray-800
-                             focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                  />
-                  <input
-                    type="number"
-                    value={trainingDetails.minutes}
-                    onChange={handleTrainingDetailChange("minutes")}
-                    disabled={isSubmitting}
-                    min="0"
-                    placeholder="Minutes"
-                    className="flex-1 p-2 rounded-lg border border-gray-300 dark:border-gray-600
-                             bg-gray-50 dark:bg-gray-800
-                             focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveMetric}
+                    disabled={isSubmitting || inputValue === "" || (selectedMetricKey === "workingHours" && !selectedContractor)}
+                    className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-nowrap"
+                  >
+                    Save
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleSaveMetric}
-                  disabled={
-                    isSubmitting ||
-                    trainingDetails.people === "" ||
-                    (trainingDetails.length === "" && trainingDetails.minutes === "")
-                  }
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                >
-                  Save
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  disabled={isSubmitting}
-                  min="0"
-                  placeholder="Enter value"
-                  autoFocus
-                  className="flex-1 p-2 rounded-lg border border-gray-300 dark:border-gray-600
-                           bg-gray-50 dark:bg-gray-800
-                           focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                />
-                <button
-                  type="button"
-                  onClick={handleSaveMetric}
-                  disabled={isSubmitting || inputValue === ""}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                >
-                  Save
-                </button>
+                
+                {/* Contractor selection for working hours */}
+                {selectedMetricKey === "workingHours" && (
+                  <div>
+                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
+                      Select Contractor *
+                    </label>
+                    {loadingContractors ? (
+                      <p className="text-sm text-gray-500">Loading contractors...</p>
+                    ) : contractors.length === 0 ? (
+                      <p className="text-sm text-red-500">No contractors available for this project</p>
+                    ) : (
+                      <select
+                        value={selectedContractor}
+                        onChange={(e) => setSelectedContractor(e.target.value)}
+                        disabled={isSubmitting}
+                        className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600
+                                 bg-gray-50 dark:bg-gray-800
+                                 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-base"
+                        style={{ fontSize: '16px' }}
+                      >
+                        <option value="">-- Select a contractor --</option>
+                        {contractors.map((contractor) => (
+                          <option key={contractor.contractorId} value={contractor.contractorId}>
+                            {contractor.contractorName}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -288,19 +471,34 @@ export default function MetricForm({ onSubmit }) {
             <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
               Entered Metrics:
             </p>
-            <div className="space-y-1">
+            <div className="space-y-2">
               {Object.entries(metrics).map(([key, value]) =>
                 value !== "" && value !== "0" ? (
-                  <p key={key} className="text-sm text-gray-700 dark:text-gray-400">
-                    • {editableMetricDefinitions.find((m) => m.key === key)?.label}:
-                    {key === "trainingHours" && trainingDetails.people && (trainingDetails.length || trainingDetails.minutes) ? (
-                      <span className="font-semibold">
-                        {" "}{trainingDetails.people} people × {trainingDetails.length || 0}h {trainingDetails.minutes || 0}m = {value}
-                      </span>
-                    ) : (
-                      <span className="font-semibold"> {value}</span>
-                    )}
-                  </p>
+                  <div key={key} className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-400 p-2 rounded-lg bg-white dark:bg-gray-700">
+                    <span>
+                      • {editableMetricDefinitions.find((m) => m.key === key)?.label}:
+                      {key === "trainingHours" && trainingDetails.people && (trainingDetails.length || trainingDetails.minutes) ? (
+                        <span className="font-semibold">
+                          {" "}{trainingDetails.people} people × {trainingDetails.length || 0}h {trainingDetails.minutes || 0}m = {value}
+                        </span>
+                      ) : key === "workingHours" && workingHoursContractor ? (
+                        <span className="font-semibold">
+                          {" "}{value} hours ({workingHoursContractor})
+                        </span>
+                      ) : (
+                        <span className="font-semibold"> {value}</span>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteMetric(key)}
+                      disabled={isSubmitting}
+                      className="ml-4 px-2 py-1 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 rounded transition disabled:opacity-50"
+                      title="Delete this metric"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 ) : null
               )}
             </div>
@@ -311,7 +509,7 @@ export default function MetricForm({ onSubmit }) {
         <button
           type="submit"
           disabled={isSubmitting || !Object.values(metrics).some(v => v !== "" && v !== "0")}
-          className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 active:bg-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium text-base min-h-[48px]"
         >
           {isSubmitting ? "Submitting..." : "Submit Metrics"}
         </button>
