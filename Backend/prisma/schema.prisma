@@ -23,12 +23,14 @@ model Project {
 model Contractors {
   id                Int                  @id @default(autoincrement())
   name              String               @unique
+  leadingIndicators HSE_Report[]
   laggingIndicators Lagging_Indicators[]
 }
 
 model HSE_Report {
   id                Int      @id @default(autoincrement())
   projectId         Int      @default(0)
+  contractorId      Int      @default(0)
   HSEAudits         Int      @default(0)
   safetyWalks       Int      @default(0)
   toolboxTalks      Int      @default(0)
@@ -37,7 +39,8 @@ model HSE_Report {
   jobSafetyAnalysis Int      @default(0)
   timeStamp         DateTime
 
-  project Project @relation(fields: [projectId], references: [id])
+  project    Project     @relation(fields: [projectId], references: [id])
+  contractor Contractors @relation(fields: [contractorId], references: [id])
 }
 
 model Lagging_Indicators {

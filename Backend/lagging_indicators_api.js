@@ -14,7 +14,7 @@ export const data = {
     },
     {
       projectCode: "N80002",
-      contractor: "Sub1",
+      contractor: "Subcontractor_1",
       FA: 0,
       MTI: 2,
       RTW: 0,
@@ -26,7 +26,7 @@ export const data = {
     },
     {
       projectCode: "N80002",
-      contractor: "Sub2",
+      contractor: "Subcontractor_2",
       FA: 1,
       MTI: 0,
       RTW: 0,
@@ -50,7 +50,7 @@ export const data = {
     },
     {
       projectCode: "N80002",
-      contractor: "Sub1",
+      contractor: "Subcontractor_1",
       FA: 0,
       MTI: 1,
       RTW: 0,
@@ -62,7 +62,7 @@ export const data = {
     },
     {
       projectCode: "N80002",
-      contractor: "Sub2",
+      contractor: "Subcontractor_2",
       FA: 1,
       MTI: 0,
       RTW: 0,
@@ -86,7 +86,7 @@ export const data = {
     },
     {
       projectCode: "N80002",
-      contractor: "Sub1",
+      contractor: "Subcontractor_1",
       FA: 1,
       MTI: 0,
       RTW: 0,
@@ -98,7 +98,7 @@ export const data = {
     },
     {
       projectCode: "N80002",
-      contractor: "Sub2",
+      contractor: "Subcontractor_2",
       FA: 0,
       MTI: 3,
       RTW: 0,
@@ -123,7 +123,7 @@ export const data = {
     },
     {
       projectCode: "N90073",
-      contractor: "Sub1",
+      contractor: "Subcontractor_1",
       FA: 0,
       MTI: 1,
       RTW: 0,
@@ -135,7 +135,7 @@ export const data = {
     },
     {
       projectCode: "N90073",
-      contractor: "Sub2",
+      contractor: "Subcontractor_2",
       FA: 0,
       MTI: 2,
       RTW: 0,
@@ -159,7 +159,7 @@ export const data = {
     },
     {
       projectCode: "N90073",
-      contractor: "Sub1",
+      contractor: "Subcontractor_1",
       FA: 0,
       MTI: 0,
       RTW: 0,
@@ -171,7 +171,7 @@ export const data = {
     },
     {
       projectCode: "N90073",
-      contractor: "Sub2",
+      contractor: "Subcontractor_2",
       FA: 2,
       MTI: 0,
       RTW: 0,
@@ -195,7 +195,7 @@ export const data = {
     },
     {
       projectCode: "N90073",
-      contractor: "Sub1",
+      contractor: "Subcontractor_1",
       FA: 1,
       MTI: 0,
       RTW: 0,
@@ -207,9 +207,21 @@ export const data = {
     },
     {
       projectCode: "N90073",
-      contractor: "Sub2",
+      contractor: "Subcontractor_2",
       FA: 0,
       MTI: 2,
+      RTW: 0,
+      Fatality: 0,
+      PPD: 0,
+      PTD: 0,
+      LWC: 0,
+      timeStamp: "2025-11-25T00:00:00",
+    },
+    {
+      projectCode: "NON_PROJECT_PERSONNEL",
+      contractor: "NON_PROJECT_PERSONNEL",
+      FA: 0,
+      MTI: 0,
       RTW: 0,
       Fatality: 0,
       PPD: 0,
