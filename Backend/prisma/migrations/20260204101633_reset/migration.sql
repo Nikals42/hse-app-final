@@ -7,9 +7,18 @@ CREATE TABLE "Project" (
 );
 
 -- CreateTable
+CREATE TABLE "Contractors" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Contractors_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "HSE_Report" (
     "id" SERIAL NOT NULL,
     "projectId" INTEGER NOT NULL DEFAULT 0,
+    "contractorId" INTEGER NOT NULL DEFAULT 0,
     "HSEAudits" INTEGER NOT NULL DEFAULT 0,
     "safetyWalks" INTEGER NOT NULL DEFAULT 0,
     "toolboxTalks" INTEGER NOT NULL DEFAULT 0,
@@ -25,7 +34,7 @@ CREATE TABLE "HSE_Report" (
 CREATE TABLE "Lagging_Indicators" (
     "id" SERIAL NOT NULL,
     "projectId" INTEGER NOT NULL DEFAULT 0,
-    "subcontractorId" INTEGER NOT NULL DEFAULT 0,
+    "contractorId" INTEGER NOT NULL DEFAULT 0,
     "LWC" INTEGER NOT NULL DEFAULT 0,
     "FA" INTEGER NOT NULL DEFAULT 0,
     "MTI" INTEGER NOT NULL DEFAULT 0,
@@ -46,17 +55,11 @@ CREATE TABLE "Accounts" (
     CONSTRAINT "Accounts_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "Subcontractors" (
-    "id" SERIAL NOT NULL,
-    "projectId" INTEGER NOT NULL DEFAULT 0,
-    "name" TEXT NOT NULL,
-
-    CONSTRAINT "Subcontractors_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "Project_name_key" ON "Project"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Contractors_name_key" ON "Contractors"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Accounts_username_key" ON "Accounts"("username");
@@ -65,10 +68,10 @@ CREATE UNIQUE INDEX "Accounts_username_key" ON "Accounts"("username");
 ALTER TABLE "HSE_Report" ADD CONSTRAINT "HSE_Report_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "HSE_Report" ADD CONSTRAINT "HSE_Report_contractorId_fkey" FOREIGN KEY ("contractorId") REFERENCES "Contractors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Lagging_Indicators" ADD CONSTRAINT "Lagging_Indicators_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Lagging_Indicators" ADD CONSTRAINT "Lagging_Indicators_subcontractorId_fkey" FOREIGN KEY ("subcontractorId") REFERENCES "Subcontractors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Subcontractors" ADD CONSTRAINT "Subcontractors_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Lagging_Indicators" ADD CONSTRAINT "Lagging_Indicators_contractorId_fkey" FOREIGN KEY ("contractorId") REFERENCES "Contractors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

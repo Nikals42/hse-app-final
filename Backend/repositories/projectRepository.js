@@ -29,7 +29,7 @@ export const getContractors = async (req) => {
     contractorName: c.contractor.name,
   }));
 };
-
+/*
 export const getProjectData = async (req) => {
   const { projectId } = req.body;
   const projectData = await prisma.lagging_Indicators.groupBy({
@@ -58,7 +58,7 @@ export const getProjectData = async (req) => {
     PTD: d._sum["PTD"],
   }));
 };
-/*
+*/
 export const getProjectData = async () => {
   const projectData = await prisma.project.findMany({
     include: {
@@ -79,4 +79,3 @@ export const getProjectData = async () => {
 
   return projectData;
 };
-*/
