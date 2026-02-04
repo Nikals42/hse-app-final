@@ -36,7 +36,7 @@ export default function MetricForm({ onSubmit, projectId }) {
     if (!projectId) return;
     
     setLoadingContractors(true);
-    fetch(`https://localhost:3000/projects/contractors?projectId=${projectId}`)
+    fetch(`http://localhost:3000/projects/contractors?projectId=${projectId}`)
       .then(res => res.json())
       .then(data => {
         setContractors(data || []);

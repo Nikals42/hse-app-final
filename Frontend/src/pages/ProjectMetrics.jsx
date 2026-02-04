@@ -18,8 +18,8 @@ useEffect(() => {
 
   // Fetch both project info and lagging indicators
   Promise.all([
-    fetch(`https://localhost:3000/projects`).then(res => res.json()),
-    fetch(`https://localhost:3000/projects/data?projectId=${id}`).then(res => res.json())
+    fetch(`http://localhost:3000/projects`).then(res => res.json()),
+    fetch(`http://localhost:3000/projects/data?projectId=${id}`).then(res => res.json())
   ])
     .then(([projects, laggingData]) => {
       const foundProject = projects.find((p) => p.id === Number(id));
@@ -43,7 +43,7 @@ useEffect(() => {
   const handleSubmit = async (data) => {
     setSubmitted(data);
     try {
-      const response = await fetch("https://localhost:3000/report", {
+      const response = await fetch("http://localhost:3000/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ProjectID: id, ...data}),
