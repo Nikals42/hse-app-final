@@ -13,19 +13,25 @@ export default function ProjectMetrics() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  useEffect(() => {
-    fetch("http://localhost:3000/projects/data")
-      .then((res) => res.json())
-      .then((data) => {
-        const found = data.find((p) => p.id === Number(id));
-        setProject(found);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch project:", err);
-        setLoading(false);
-      });
-  }, [id]);
+useEffect(() => {
+  setLoading(true);
+
+  fetch(`http://localhost:3000/projects/data?projectId=${id}`)
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to fetch project data");
+      return res.json();
+    }) 
+    .then((data) => {
+      const foundProject = data.find((p) => p.id === Number(id));
+      setProject(foundProject ?? null);
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error("Failed to fetch project:", err);
+      setLoading(false);
+    });
+}, [id]);
+
 
   const handleSubmit = async (data) => {
     setSubmitted(data);
