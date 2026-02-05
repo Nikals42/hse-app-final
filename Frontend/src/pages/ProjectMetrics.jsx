@@ -12,6 +12,7 @@ export default function ProjectMetrics() {
   const [activeTab, setActiveTab] = useState("metrics"); // "metrics" or "lagging"
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedContractorFilter, setSelectedContractorFilter] = useState("all");
 
 useEffect(() => {
   setLoading(true);
@@ -81,10 +82,35 @@ useEffect(() => {
 
   // NORMALIZE laggingIndicators
   const laggingIndicatorsRaw = project.laggingIndicators;
-  const laggingIndicators =
-    Array.isArray(laggingIndicatorsRaw)
-      ? laggingIndicatorsRaw[0] ?? {}
-      : laggingIndicatorsRaw ?? {};
+  const laggingIndicators = Array.isArray(laggingIndicatorsRaw)
+    ? laggingIndicatorsRaw
+    : laggingIndicatorsRaw
+    ? [laggingIndicatorsRaw]
+    : [];
+
+  // Get unique contractors for dropdown
+  const contractors = laggingIndicators.map(li => ({
+    id: li.contractorId,
+    name: li.contractorName || `Contractor ${li.contractorId}`
+  }));
+
+  // Filter lagging indicators by selected contractor
+  const filteredLaggingIndicators = selectedContractorFilter === "all"
+    ? laggingIndicators
+    : laggingIndicators.filter(li => li.contractorId === parseInt(selectedContractorFilter));
+
+  // Calculate totals for whole project view
+  const projectTotals = selectedContractorFilter === "all" && laggingIndicators.length > 0
+    ? {
+        LWC: laggingIndicators.reduce((sum, li) => sum + (li.LWC || 0), 0),
+        FA: laggingIndicators.reduce((sum, li) => sum + (li.FA || 0), 0),
+        MTI: laggingIndicators.reduce((sum, li) => sum + (li.MTI || 0), 0),
+        RTW: laggingIndicators.reduce((sum, li) => sum + (li.RTW || 0), 0),
+        Fatality: laggingIndicators.reduce((sum, li) => sum + (li.Fatality || 0), 0),
+        PPD: laggingIndicators.reduce((sum, li) => sum + (li.PPD || 0), 0),
+        PTD: laggingIndicators.reduce((sum, li) => sum + (li.PTD || 0), 0),
+      }
+    : null;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white">
@@ -222,27 +248,117 @@ useEffect(() => {
         {/* Lagging Indicators Tab */}
         {activeTab === "lagging" && (
           <div>
-            <h3 className="text-lg font-semibold mb-4">
-              Lagging Indicators (Read-Only)
-            </h3>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+              <h3 className="text-lg font-semibold">
+                Lagging Indicators (Read-Only)
+              </h3>
+              
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  View:
+                </label>
+                <select
+                  value={selectedContractorFilter}
+                  onChange={(e) => setSelectedContractorFilter(e.target.value)}
+                  className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">Whole Project</option>
+                  {contractors.map((contractor) => (
+                    <option key={contractor.id} value={contractor.id}>
+                      {contractor.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-            {Object.keys(laggingIndicators).length === 0 ? (
+            {laggingIndicators.length === 0 ? (
               <p className="text-sm text-gray-500">
                 No lagging indicators available.
               </p>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(laggingIndicators).map(([key, value]) => (
+            ) : selectedContractorFilter === "all" ? (
+              // Whole Project View - Show totals and breakdown by contractor
+              <div className="space-y-6">
+                {/* Project Totals Card */}
+                {projectTotals && (
+                  <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-700">
+                    <h4 className="text-md font-semibold mb-3 text-blue-700 dark:text-blue-300">
+                      📊 Project Totals
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {['LWC', 'FA', 'MTI', 'RTW', 'Fatality', 'PPD', 'PTD'].map((key) => (
+                        <div
+                          key={key}
+                          className="p-3 rounded-lg bg-white dark:bg-gray-800"
+                        >
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {key}
+                          </p>
+                          <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">
+                            {projectTotals[key]}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Individual Contractors */}
+                <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                  By Contractor
+                </h4>
+                {filteredLaggingIndicators.map((contractor, idx) => (
                   <div
-                    key={key}
-                    className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700"
+                    key={idx}
+                    className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600"
                   >
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {key}
-                    </p>
-                    <p className="text-xl font-semibold">
-                      {value ?? 0}
-                    </p>
+                    <h4 className="text-md font-semibold mb-3 text-gray-700 dark:text-gray-200">
+                      {contractor.contractorName || `Contractor ${contractor.contractorId}`}
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {['LWC', 'FA', 'MTI', 'RTW', 'Fatality', 'PPD', 'PTD'].map((key) => (
+                        <div
+                          key={key}
+                          className="p-3 rounded-lg bg-white dark:bg-gray-800"
+                        >
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {key}
+                          </p>
+                          <p className="text-xl font-semibold">
+                            {contractor[key] ?? 0}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Single Contractor View
+              <div className="space-y-6">
+                {filteredLaggingIndicators.map((contractor, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600"
+                  >
+                    <h4 className="text-md font-semibold mb-3 text-blue-600 dark:text-blue-400">
+                      {contractor.contractorName || `Contractor ${contractor.contractorId}`}
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {['LWC', 'FA', 'MTI', 'RTW', 'Fatality', 'PPD', 'PTD'].map((key) => (
+                        <div
+                          key={key}
+                          className="p-3 rounded-lg bg-white dark:bg-gray-800"
+                        >
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {key}
+                          </p>
+                          <p className="text-xl font-semibold">
+                            {contractor[key] ?? 0}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>

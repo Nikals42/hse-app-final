@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { editableMetricDefinitions } from "../constants/editableMetricsDefinitions";
 
 export default function MetricForm({ onSubmit, projectId }) {
-  const allowedDefinitions = editableMetricDefinitions;
-
   const [metrics, setMetrics] = useState(
     Object.fromEntries(editableMetricDefinitions.map((m) => [m.key, ""]))
   );
@@ -12,6 +10,9 @@ export default function MetricForm({ onSubmit, projectId }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Personnel type state
+  const [personnelType, setPersonnelType] = useState(""); // "almaco" or "contractor"
   
   // New state for one-by-one input
   const [selectedMetricKey, setSelectedMetricKey] = useState("");
@@ -24,6 +25,13 @@ export default function MetricForm({ onSubmit, projectId }) {
   const [selectedContractor, setSelectedContractor] = useState("");
   const [loadingContractors, setLoadingContractors] = useState(false);
   const [workingHoursContractor, setWorkingHoursContractor] = useState(null); // Store contractor name for display
+  
+  // Filter metrics based on personnel type
+  const allowedDefinitions = personnelType === "almaco"
+    ? editableMetricDefinitions.filter(m => m.key !== "workingHours")
+    : personnelType === "contractor"
+    ? editableMetricDefinitions.filter(m => m.key === "workingHours")
+    : [];
 
   // Set default date to today when component loads
   useEffect(() => {
@@ -36,7 +44,7 @@ export default function MetricForm({ onSubmit, projectId }) {
     if (!projectId) return;
     
     setLoadingContractors(true);
-    fetch(`http://localhost:3000/projects/contractors?projectId=${projectId}`)
+    fetch(`https://hse-app-backend.vercel.app/projects/contractors?projectId=${projectId}`)
       .then(res => res.json())
       .then(data => {
         setContractors(data || []);
@@ -49,6 +57,23 @@ export default function MetricForm({ onSubmit, projectId }) {
         setLoadingContractors(false);
       });
   }, [projectId]);
+  
+  // Handle personnel type change
+  const handlePersonnelTypeChange = (type) => {
+    setPersonnelType(type);
+    // Reset form when changing personnel type
+    setMetrics(Object.fromEntries(editableMetricDefinitions.map((m) => [m.key, ""])));
+    setSelectedMetricKey("");
+    setInputValue("");
+    setTrainingDetails({ people: "", length: "", minutes: "" });
+    setSelectedContractor("");
+    setWorkingHoursContractor(null);
+    
+    // If contractor type, pre-select workingHours metric
+    if (type === "contractor") {
+      setSelectedMetricKey("workingHours");
+    }
+  };
 
   const handleMetricSelect = (key) => {
     setSelectedMetricKey(key);
@@ -135,9 +160,13 @@ export default function MetricForm({ onSubmit, projectId }) {
       return;
     }
 
-    // Auto-reset for next metric input
-    setSelectedMetricKey("");
-    setInputValue("");
+    // Auto-reset for next metric input (but keep workingHours selected for contractors)
+    if (personnelType === "contractor") {
+      setInputValue("");
+    } else {
+      setSelectedMetricKey("");
+      setInputValue("");
+    }
   };
 
   const handleDeleteMetric = (key) => {
@@ -154,6 +183,12 @@ export default function MetricForm({ onSubmit, projectId }) {
   const handleSubmitMetrics = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    
+    // Validate personnel type is selected
+    if (!personnelType) {
+      setErrorMessage("Please select whether you are Almaco personnel or a contractor.");
+      return;
+    }
     
     // Validate that date is selected
     if (!timestamp) {
@@ -176,12 +211,17 @@ export default function MetricForm({ onSubmit, projectId }) {
     
     setIsSubmitting(true);
     setSuccessMessage("");
+    setErrorMessage("");
     try {
       const submissionData = { ...metrics, timestamp };
-      if (selectedContractor) {
+      // Set contractor ID: 1 for Almaco personnel, selected contractor for contractors
+      if (personnelType === "almaco") {
+        submissionData.contractor = "1";
+      } else if (selectedContractor) {
         submissionData.contractor = selectedContractor;
       }
       await onSubmit(submissionData);
+      
       // Reset form on successful submission
       setMetrics(
         Object.fromEntries(editableMetricDefinitions.map((m) => [m.key, ""]))
@@ -193,7 +233,7 @@ export default function MetricForm({ onSubmit, projectId }) {
       setTrainingDetails({ people: "", length: "", minutes: "" });
       setSelectedContractor("");
       setWorkingHoursContractor(null);
-      
+      setPersonnelType("");
 
     } catch (error) {
       console.error("Submission failed:", error);
@@ -229,6 +269,73 @@ export default function MetricForm({ onSubmit, projectId }) {
 
       <form onSubmit={handleSubmitMetrics} className="mt-6 space-y-4">
 
+        {/* Personnel Type Selection */}
+        <div className="p-3 sm:p-4 rounded-xl border-2 border-blue-300 dark:border-blue-700
+                   bg-blue-50 dark:bg-blue-900/20 shadow-sm">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 block mb-3">
+            Are you Almaco Personnel or a Contractor? *
+          </label>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={() => handlePersonnelTypeChange("almaco")}
+              disabled={isSubmitting}
+              className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
+                personnelType === "almaco"
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
+              } disabled:opacity-50`}
+            >
+              Almaco Personnel
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePersonnelTypeChange("contractor")}
+              disabled={isSubmitting}
+              className={`flex-1 py-3 px-4 rounded-lg font-medium transition ${
+                personnelType === "contractor"
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
+              } disabled:opacity-50`}
+            >
+              Contractor
+            </button>
+          </div>
+          
+          {personnelType === "contractor" && (
+            <div className="mt-4">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 block mb-2">
+                Select Your Company *
+              </label>
+              {loadingContractors ? (
+                <p className="text-sm text-gray-600 dark:text-gray-400">Loading contractors...</p>
+              ) : contractors.length === 0 ? (
+                <p className="text-sm text-red-600 dark:text-red-400">No contractors available for this project</p>
+              ) : (
+                <select
+                  value={selectedContractor}
+                  onChange={(e) => setSelectedContractor(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600
+                           bg-white dark:bg-gray-800
+                           focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-base"
+                  style={{ fontSize: '16px' }}
+                >
+                  <option value="">-- Select your company --</option>
+                  {contractors.map((contractor) => (
+                    <option key={contractor.contractorId} value={contractor.contractorId}>
+                      {contractor.contractorName}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+        </div>
+
+        {personnelType && (
+          <>
         {/* Timestamp input */}
         <div className="p-3 sm:p-4 rounded-xl border border-gray-200 dark:border-gray-700
                    bg-white dark:bg-gray-900 shadow-sm overflow-hidden">
@@ -422,15 +529,15 @@ export default function MetricForm({ onSubmit, projectId }) {
                   <button
                     type="button"
                     onClick={handleSaveMetric}
-                    disabled={isSubmitting || inputValue === "" || (selectedMetricKey === "workingHours" && !selectedContractor)}
+                    disabled={isSubmitting || inputValue === "" || (selectedMetricKey === "workingHours" && personnelType === "almaco" && !selectedContractor) || (selectedMetricKey === "workingHours" && personnelType === "contractor" && !selectedContractor)}
                     className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium whitespace-nowrap"
                   >
                     Save
                   </button>
                 </div>
                 
-                {/* Contractor selection for working hours */}
-                {selectedMetricKey === "workingHours" && (
+                {/* Contractor selection for working hours - only show if Almaco personnel */}
+                {selectedMetricKey === "workingHours" && personnelType === "almaco" && (
                   <div>
                     <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
                       Select Contractor *
@@ -457,6 +564,14 @@ export default function MetricForm({ onSubmit, projectId }) {
                         ))}
                       </select>
                     )}
+                  </div>
+                )}
+                {/* For contractors, the company is already selected at the top */}
+                {selectedMetricKey === "workingHours" && personnelType === "contractor" && selectedContractor && (
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold">Company:</span> {contractors.find(c => c.contractorId === parseInt(selectedContractor))?.contractorName}
+                    </p>
                   </div>
                 )}
               </div>
@@ -513,6 +628,8 @@ export default function MetricForm({ onSubmit, projectId }) {
         >
           {isSubmitting ? "Submitting..." : "Submit Metrics"}
         </button>
+        </>
+        )}
       </form>
     </>
   );

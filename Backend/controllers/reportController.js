@@ -7,5 +7,6 @@ export const report = async (req, res) => {
     return res.json(send);
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ error: error.message || "Failed to create report" });
   }
 };
