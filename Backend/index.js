@@ -18,7 +18,6 @@ const PORT = 3000;
 
 app.get("/api/nc_tool", apiController.api);
 app.get("/projects", projectController.readAll);
-app.get("/projects/contractors", projectController.readContractors);
 app.get("/projects/data", projectController.readData);
 
 app.post("/report", reportController.report);

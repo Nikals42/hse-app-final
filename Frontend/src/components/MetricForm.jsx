@@ -272,9 +272,6 @@ export default function MetricForm({ onSubmit, projectId }) {
         {/* Personnel Type Selection */}
         <div className="p-3 sm:p-4 rounded-xl border-2 border-blue-300 dark:border-blue-700
                    bg-blue-50 dark:bg-blue-900/20 shadow-sm">
-          <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 block mb-3">
-            Are you Almaco Personnel or a Contractor? *
-          </label>
           
           <div className="flex flex-col sm:flex-row gap-3">
             <button
@@ -287,7 +284,7 @@ export default function MetricForm({ onSubmit, projectId }) {
                   : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
               } disabled:opacity-50`}
             >
-              Almaco Personnel
+              Create HSE Report
             </button>
             <button
               type="button"
@@ -299,7 +296,7 @@ export default function MetricForm({ onSubmit, projectId }) {
                   : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500"
               } disabled:opacity-50`}
             >
-              Contractor
+              Submit Working Hours
             </button>
           </div>
           
