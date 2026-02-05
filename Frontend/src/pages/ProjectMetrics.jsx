@@ -88,11 +88,15 @@ useEffect(() => {
     ? [laggingIndicatorsRaw]
     : [];
 
-  // Get unique contractors for dropdown
-  const contractors = laggingIndicators.map(li => ({
-    id: li.contractorId,
-    name: li.contractorName || `Contractor ${li.contractorId}`
-  }));
+  // Get unique contractors for dropdown with proper property names for MetricForm
+  const uniqueContractorIds = [...new Set(laggingIndicators.map(li => li.contractorId))];
+  const contractors = uniqueContractorIds.map(contractorId => {
+    const li = laggingIndicators.find(indicator => indicator.contractorId === contractorId);
+    return {
+      contractorId: li.contractorId,
+      contractorName: li.contractorName || `Contractor ${li.contractorId}`
+    };
+  });
 
   // Filter lagging indicators by selected contractor
   const filteredLaggingIndicators = selectedContractorFilter === "all"
@@ -241,6 +245,7 @@ useEffect(() => {
             <MetricForm
               onSubmit={handleSubmit}
               projectId={id}
+              contractors={contractors}
             />
           </>
         )}

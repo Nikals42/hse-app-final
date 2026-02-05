@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { editableMetricDefinitions } from "../constants/editableMetricsDefinitions";
 
-export default function MetricForm({ onSubmit, projectId }) {
+export default function MetricForm({ onSubmit, projectId, contractors = [] }) {
   const [metrics, setMetrics] = useState(
     Object.fromEntries(editableMetricDefinitions.map((m) => [m.key, ""]))
   );
@@ -21,9 +21,7 @@ export default function MetricForm({ onSubmit, projectId }) {
   const [trainingInputMode, setTrainingInputMode] = useState("direct"); // "direct" or "calculated"
   
   // Contractor state
-  const [contractors, setContractors] = useState([]);
   const [selectedContractor, setSelectedContractor] = useState("");
-  const [loadingContractors, setLoadingContractors] = useState(false);
   const [workingHoursContractor, setWorkingHoursContractor] = useState(null); // Store contractor name for display
   
   // Filter metrics based on personnel type
@@ -38,25 +36,6 @@ export default function MetricForm({ onSubmit, projectId }) {
     const today = new Date().toISOString().split('T')[0];
     setTimestamp(today);
   }, []);
-
-  // Fetch contractors from backend
-  useEffect(() => {
-    if (!projectId) return;
-    
-    setLoadingContractors(true);
-    fetch(`https://hse-app-backend.vercel.app/projects/contractors?projectId=${projectId}`)
-      .then(res => res.json())
-      .then(data => {
-        setContractors(data || []);
-      })
-      .catch(err => {
-        console.error("Failed to fetch contractors:", err);
-        setContractors([]);
-      })
-      .finally(() => {
-        setLoadingContractors(false);
-      });
-  }, [projectId]);
   
   // Handle personnel type change
   const handlePersonnelTypeChange = (type) => {
@@ -305,9 +284,7 @@ export default function MetricForm({ onSubmit, projectId }) {
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 block mb-2">
                 Select Your Company *
               </label>
-              {loadingContractors ? (
-                <p className="text-sm text-gray-600 dark:text-gray-400">Loading contractors...</p>
-              ) : contractors.length === 0 ? (
+              {contractors.length === 0 ? (
                 <p className="text-sm text-red-600 dark:text-red-400">No contractors available for this project</p>
               ) : (
                 <select
@@ -539,9 +516,7 @@ export default function MetricForm({ onSubmit, projectId }) {
                     <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 block mb-2">
                       Select Contractor *
                     </label>
-                    {loadingContractors ? (
-                      <p className="text-sm text-gray-500">Loading contractors...</p>
-                    ) : contractors.length === 0 ? (
+                    {contractors.length === 0 ? (
                       <p className="text-sm text-red-500">No contractors available for this project</p>
                     ) : (
                       <select
