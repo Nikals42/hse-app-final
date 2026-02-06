@@ -269,8 +269,8 @@ useEffect(() => {
                 >
                   <option value="all">Whole Project</option>
                   {contractors.map((contractor) => (
-                    <option key={contractor.id} value={contractor.id}>
-                      {contractor.name}
+                    <option key={contractor.contractorId} value={contractor.contractorId}>
+                      {contractor.contractorName}
                     </option>
                   ))}
                 </select>
