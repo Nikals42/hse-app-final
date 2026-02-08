@@ -219,7 +219,7 @@ export const data = {
     },
     {
       projectCode: "NON_PROJECT_PERSONNEL",
-      contractor: "NON_PROJECT_PERSONNEL",
+      contractor: "Almaco",
       FA: 0,
       MTI: 0,
       RTW: 0,
