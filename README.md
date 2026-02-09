@@ -199,7 +199,7 @@ npx vite                  # Start the Vite dev server (default port 5173)
 ### Usage
 
 1. Open the frontend in your browser (e.g. `http://localhost:5173`).
-2. Log in with a valid username (default seeded account: `Almaco26`).
+2. Log in with a valid username.
 3. Select a project from the dropdown.
 4. Use the **Input Metrics** tab to submit leading indicator reports.
 5. Use the **Lagging Indicators** tab to view aggregated incident data per contractor.
