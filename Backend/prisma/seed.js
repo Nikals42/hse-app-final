@@ -13,6 +13,7 @@ async function main() {
   });
   await callAPI.apiProjects();
   await callAPI.apiContractors();
+  await callAPI.apiProjectContractor();
   await callAPI.apiLaggingIndicators();
 }
 main()

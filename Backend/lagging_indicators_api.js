@@ -220,7 +220,7 @@ export const data = {
     {
       projectCode: "NON_PROJECT_PERSONNEL",
       contractor: "Almaco",
-      FA: 0,
+      FA: 1,
       MTI: 0,
       RTW: 0,
       Fatality: 0,
@@ -228,6 +228,18 @@ export const data = {
       PTD: 0,
       LWC: 0,
       timeStamp: "2025-11-25T00:00:00",
+    },
+    {
+      projectCode: "N80002",
+      contractor: "Subcontractor_2",
+      FA: 0,
+      MTI: 1,
+      RTW: 0,
+      Fatality: 0,
+      PPD: 0,
+      PTD: 0,
+      LWC: 1,
+      timeStamp: "2026-02-25T00:00:00",
     },
   ],
 };

@@ -14,17 +14,30 @@ datasource db {
 }
 
 model Project {
-  id                Int                  @id @default(autoincrement())
-  name              String               @unique
-  leadingIndicators HSE_Report[]
-  laggingIndicators Lagging_Indicators[]
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique
+  leadingIndicators  HSE_Report[]
+  laggingIndicators  Lagging_Indicators[]
+  projectContractors ProjectContractor[]
 }
 
 model Contractors {
-  id                Int                  @id @default(autoincrement())
-  name              String               @unique
-  leadingIndicators HSE_Report[]
-  laggingIndicators Lagging_Indicators[]
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique
+  leadingIndicators  HSE_Report[]
+  laggingIndicators  Lagging_Indicators[]
+  projectContractors ProjectContractor[]
+}
+
+model ProjectContractor {
+  id           Int @id @default(autoincrement())
+  projectId    Int
+  contractorId Int
+
+  project    Project     @relation(fields: [projectId], references: [id])
+  contractor Contractors @relation(fields: [contractorId], references: [id])
+
+  @@unique([projectId, contractorId])
 }
 
 model HSE_Report {
