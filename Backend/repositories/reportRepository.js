@@ -20,8 +20,12 @@ export const newReport = async (req) => {
       workingHours: Number(workingHours),
       trainingHours: Number(trainingHours),
       jobSafetyAnalysis: Number(jobSafetyAnalysis),
-      timeStamp: new Date(timestamp), //timestamp is saved here from frontend
+      timeStamp: new Date(timestamp),
     },
   });
-  return newReport;
+  if (!newReport) {
+    return { ok: false };
+  } else {
+    return { ok: true };
+  }
 };

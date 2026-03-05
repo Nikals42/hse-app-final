@@ -7,9 +7,10 @@ import {
 export const readAll = async (req, res) => {
   try {
     const projects = await getProjects();
-    return res.json(projects);
+    return res.status(200).json(projects);
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -17,8 +18,9 @@ export const readAll = async (req, res) => {
 export const readData = async (req, res) => {
   try {
     const projectData = await getProjectData(req);
-    return res.json(projectData);
+    return res.status(200).json(projectData);
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ error: error.message });
   }
 };

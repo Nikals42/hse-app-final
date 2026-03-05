@@ -1,9 +1,8 @@
-import { pid } from "node:process";
+import { json } from "express";
 import prisma from "./prisma.js";
 
 export const apiProjects = async function () {
   try {
-    // const response = await fetch('https://hse-app-backend.vercel.app/api')
     const response = await fetch("http://localhost:3000/api/nc_tool");
     const json = await response.json();
     for (const project of json.data) {
@@ -40,9 +39,49 @@ export const apiContractors = async function () {
   }
 };
 
+export const apiProjectContractor = async function () {
+  const response = await fetch("http://localhost:3000/api/nc_tool");
+  const json = await response.json();
+  for (const project of json.data) {
+    const projectName = project.projectCode;
+    const findProjectId = await prisma.project.findUnique({
+      where: {
+        name: projectName,
+      },
+      select: {
+        id: true,
+      },
+    });
+    const contractorName = project.contractor;
+    const findContractorId = await prisma.contractors.findUnique({
+      where: {
+        name: contractorName,
+      },
+      select: {
+        id: true,
+      },
+    });
+    const projectId = findProjectId.id;
+    const contractorId = findContractorId.id;
+
+    await prisma.projectContractor.upsert({
+      where: {
+        projectId_contractorId: {
+          projectId: projectId,
+          contractorId: contractorId,
+        },
+      },
+      update: {},
+      create: {
+        projectId: projectId,
+        contractorId: contractorId,
+      },
+    });
+  }
+};
+
 export const apiLaggingIndicators = async function () {
   try {
-    // const response = await fetch('https://hse-app-backend.vercel.app/api')
     const response = await fetch("http://localhost:3000/api/nc_tool");
     const json = await response.json();
     for (const project of json.data) {
