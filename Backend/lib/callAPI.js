@@ -3,7 +3,7 @@ import prisma from "./prisma.js";
 
 export const apiProjects = async function () {
   try {
-    const response = await fetch("http://localhost:3000/api/nc_tool");
+    const response = await fetch("https://hse-app-backend.vercel.app/api/nc_tool");
     const json = await response.json();
     for (const project of json.data) {
       const name = project.projectCode;
@@ -23,7 +23,7 @@ export const apiProjects = async function () {
 };
 
 export const apiContractors = async function () {
-  const response = await fetch("http://localhost:3000/api/nc_tool");
+  const response = await fetch("https://hse-app-backend.vercel.app/api/nc_tool");
   const json = await response.json();
   for (const contractor of json.data) {
     const name = contractor.contractor;
@@ -40,7 +40,7 @@ export const apiContractors = async function () {
 };
 
 export const apiProjectContractor = async function () {
-  const response = await fetch("http://localhost:3000/api/nc_tool");
+  const response = await fetch("https://hse-app-backend.vercel.app/api/nc_tool");
   const json = await response.json();
   for (const project of json.data) {
     const projectName = project.projectCode;
@@ -82,7 +82,7 @@ export const apiProjectContractor = async function () {
 
 export const apiLaggingIndicators = async function () {
   try {
-    const response = await fetch("http://localhost:3000/api/nc_tool");
+    const response = await fetch("https://hse-app-backend.vercel.app/api/nc_tool");
     const json = await response.json();
     for (const project of json.data) {
       const projectName = project.projectCode;

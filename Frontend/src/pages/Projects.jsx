@@ -8,7 +8,7 @@ export default function Projects() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:3000/projects")
+    fetch("https://hse-app-backend.vercel.app/projects")
       .then((res) => res.json())
       .then((data) => {
         setProjects(data);
