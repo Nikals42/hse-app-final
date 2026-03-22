@@ -53,7 +53,7 @@ useEffect(() => {
       if (!response.ok) {
         const result = await response.json().catch(() => ({ error: "Unknown error" }));
         console.error("Error submitting report:", result);
-        throw new Error(result.error || `Server error: ${response.status}`);
+        throw new Error(result.error || `Server error: ${response.status}, ${result.error}`);
       }
       
       const result = await response.json();

@@ -11,8 +11,8 @@ export const check = async (username) => {
   });
 
   if (!existing) {
-    return { ok: false };
+    return null;
   } else {
-    return { ok: true };
+    return existing;
   }
 };

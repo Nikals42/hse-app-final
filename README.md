@@ -13,13 +13,14 @@ The application is split into two independent parts:
 
 ## Tech Stack
 
-| Layer      | Technology                                    |
-| ---------- | --------------------------------------------- |
-| Frontend   | React 18, Vite, Tailwind CSS, React Router    |
-| Backend    | Node.js, Express                              |
-| ORM        | Prisma (with `@prisma/adapter-pg` for native PostgreSQL driver) |
-| Database   | PostgreSQL                                    |
-| Language   | JavaScript (ES Modules throughout)            |
+| Layer    | Technology                                                      |
+| -------- | --------------------------------------------------------------- |
+| Frontend | React 18, Vite, Tailwind CSS, React Router                      |
+| Backend  | Node.js, Express                                                |
+| ORM      | Prisma (with `@prisma/adapter-pg` for native PostgreSQL driver) |
+| Database | PostgreSQL                                                      |
+| Language | JavaScript (ES Modules throughout)                              |
+| Testing  | Vitest                                                          |
 
 ---
 
@@ -29,6 +30,9 @@ The application is split into two independent parts:
 hse-app/
 ├── Backend/
 │   ├── index.js                  # Express server entry point, defines routes
+│   ├── eslint.config.js          # Esling configuration
+│   ├── prisma.config.ts          # Prisma configuration
+│   ├── vitest.config.js          # Vitest configuration
 │   ├── lagging_indicators_api.js # Static/seed data for lagging indicators (mock external API)
 │   ├── package.json
 │   ├── controllers/              # Route handlers (thin layer)
@@ -43,10 +47,20 @@ hse-app/
 │   │   ├── schema.prisma         # Database schema definition
 │   │   ├── seed.js               # Database seeding script
 │   │   └── migrations/           # Prisma migration files
-│   └── repositories/             # Data access layer (Prisma queries)
-│       ├── loginRepository.js    # Account lookup
-│       ├── projectRepository.js  # Project & lagging indicator queries
-│       └── reportRepository.js   # HSE report insert
+│   ├── repositories/             # Data access layer (Prisma queries)
+│   │   ├── loginRepository.js    # Account lookup
+│   │   ├── projectRepository.js  # Project & lagging indicator queries
+│   │   └── reportRepository.js   # HSE report insert
+│   └── tests/
+│       ├── singleton.js
+│       ├── controllers/
+│       │   ├── loginController.test.js
+│       │   ├── projectController.test.js
+│       │   └── reportController.test.js
+│       └── repositories/
+│           ├── loginRepository.test.js
+│           ├── projectRepository.test.js
+│           └── reportRepository.test.js
 │
 └── Frontend/
     ├── index.html                # HTML entry point
@@ -74,20 +88,30 @@ hse-app/
 The PostgreSQL database is managed by Prisma and contains five tables:
 
 ### `Project`
+
 Stores project records (e.g. ship-building project codes like `N80002`).
 
 ### `Contractors`
+
 Stores contractor/subcontractor names (e.g. "Almaco", "Subcontractor_1").
 
+### `ProjectContractor`
+
+Stores related project ids and contactor ids.
+
 ### `HSE_Report` (Leading Indicators)
+
 Each row is a submitted HSE report tied to a project and contractor. Fields:
+
 - `HSEAudits`, `safetyWalks`, `toolboxTalks` — safety activity counts
 - `workingHours`, `trainingHours` — time-based metrics
 - `jobSafetyAnalysis` — number of JSAs performed
 - `timeStamp` — reporting date
 
 ### `Lagging_Indicators`
+
 Injury and incident records per project/contractor. Fields:
+
 - `LWC` — Lost Workday Cases
 - `FA` — First Aid cases
 - `MTI` — Medical Treatment Injuries
@@ -96,6 +120,7 @@ Injury and incident records per project/contractor. Fields:
 - `timeStamp`
 
 ### `Accounts`
+
 Simple username-only accounts for coordinator login (no passwords).
 
 All indicator tables reference `Project` and `Contractors` via foreign keys (`projectId`, `contractorId`).
@@ -125,6 +150,8 @@ The backend follows a **Controller → Repository** pattern:
    - `callAPI.js` — Seed helper functions (`apiProjects`, `apiContractors`, `apiLaggingIndicators`) that fetch from the `/api/nc_tool` endpoint and upsert/insert records into the database.
 
 5. **Seed Script** (`prisma/seed.js`) — Seeds the database by creating a default account (`Almaco26`), then calling the `callAPI` functions to populate projects, contractors, and lagging indicators from the static data source.
+
+6. **Tests** (`tests/`) — Unit tests for controllers and repositories.
 
 ---
 
@@ -208,10 +235,10 @@ npx vite                  # Start the Vite dev server (default port 5173)
 
 ## API Endpoints
 
-| Method | Endpoint               | Description                                         |
-| ------ | ---------------------- | --------------------------------------------------- |
-| GET    | `/api/nc_tool`         | Returns static lagging indicator seed data           |
-| GET    | `/projects`            | Lists all projects (`id`, `name`)                    |
-| GET    | `/projects/data`       | Aggregated lagging indicators (query: `projectId`)   |
-| POST   | `/report`              | Submit a new HSE leading indicator report             |
-| POST   | `/login`               | Validate a username against the accounts table        |
+| Method | Endpoint         | Description                                        |
+| ------ | ---------------- | -------------------------------------------------- |
+| GET    | `/api/nc_tool`   | Returns static lagging indicator seed data         |
+| GET    | `/projects`      | Lists all projects (`id`, `name`)                  |
+| GET    | `/projects/data` | Aggregated lagging indicators (query: `projectId`) |
+| POST   | `/report`        | Submit a new HSE leading indicator report          |
+| POST   | `/login`         | Validate a username against the accounts table     |

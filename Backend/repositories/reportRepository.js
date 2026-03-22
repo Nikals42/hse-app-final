@@ -1,7 +1,7 @@
 import prisma from "../lib/prisma.js";
 
 export const newReport = async (req) => {
-  const { ProjectID, timestamp, contractor, ...data } = req.body;
+  const { ProjectID, timestamp, contractor, ...data } = req;
   const {
     HSEAudits,
     safetyWalks,
@@ -23,9 +23,10 @@ export const newReport = async (req) => {
       timeStamp: new Date(timestamp),
     },
   });
+
   if (!newReport) {
-    return { ok: false };
+    return null;
   } else {
-    return { ok: true };
+    return newReport;
   }
 };

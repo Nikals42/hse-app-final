@@ -12,7 +12,7 @@ export const getProjects = async () => {
 };
 
 export const getProjectData = async (req) => {
-  const projectId = Number(req.query.projectId);
+  const projectId = Number(req.projectId);
 
   const projectData = await prisma.lagging_Indicators.groupBy({
     by: ["contractorId", "projectId"],
